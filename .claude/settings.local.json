@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Recurse -Path \"C:\\\\Users\\\\mgalv\\\\Projetos-Programacao\\\\Projetos-Optsolv\\\\Opt-PMS\" -File | Where-Object { $_.FullName -notmatch \"node_modules|pnpm-lock\" } | Select-Object FullName | Sort-Object FullName)"
+    ]
+  }
+}
