@@ -1,0 +1,8 @@
+{
+  "extends": "@optsolv/config/tsconfig",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "paths": {}
+  },
+  "include": ["src"]
+}
