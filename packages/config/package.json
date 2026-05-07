@@ -1,0 +1,11 @@
+{
+  "name": "@optsolv/config",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig": "./tsconfig.base.json",
+    "./biome": "./biome.json",
+    "./tailwind": "./tailwind-base.css"
+  }
+}
