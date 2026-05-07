@@ -1,0 +1,7 @@
+{
+  "extends": "@optsolv/config/tsconfig",
+  "compilerOptions": {
+    "paths": {}
+  },
+  "include": ["src", "drizzle.config.ts"]
+}
