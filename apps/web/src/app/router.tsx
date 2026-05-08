@@ -1,7 +1,10 @@
 import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router';
 import { type ComponentType, lazy, Suspense } from 'react';
 import { PlaceholderPage } from '@/pages/placeholder/PlaceholderPage';
-import { LoadingState } from '@/shared/components/StateViews';
+import { ForbiddenPage } from '@/pages/system/ForbiddenPage';
+import { NotFoundPage } from '@/pages/system/NotFoundPage';
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
+import { AuthPageSkeleton, LoadingState } from '@/shared/components/StateViews';
 import { AppShell } from './layouts/AppShell';
 
 const LandingPage = lazy(() =>
@@ -38,8 +41,19 @@ function withSuspense(Component: ComponentType) {
   };
 }
 
+function withAuthSuspense(Component: ComponentType) {
+  return function SuspendedAuthRoute() {
+    return (
+      <Suspense fallback={<AuthPageSkeleton />}>
+        <Component />
+      </Suspense>
+    );
+  };
+}
+
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
+  notFoundComponent: NotFoundPage,
 });
 
 const landingRoute = createRoute({
@@ -51,19 +65,29 @@ const landingRoute = createRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
-  component: withSuspense(LoginPage),
+  component: withAuthSuspense(LoginPage),
 });
 
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/register',
-  component: withSuspense(RegisterPage),
+  component: withAuthSuspense(RegisterPage),
+});
+
+const forbiddenRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/sem-permissao',
+  component: ForbiddenPage,
 });
 
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/app',
-  component: AppShell,
+  component: () => (
+    <ProtectedRoute>
+      <AppShell />
+    </ProtectedRoute>
+  ),
 });
 
 const projectsRoute = createRoute({
@@ -100,6 +124,7 @@ const routeTree = rootRoute.addChildren([
   landingRoute,
   loginRoute,
   registerRoute,
+  forbiddenRoute,
   appRoute.addChildren([
     projectsRoute,
     projectDetailRoute,
@@ -109,7 +134,11 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-export const router = createRouter({ routeTree, defaultPreload: 'intent' });
+export const router = createRouter({
+  routeTree,
+  defaultPreload: 'intent',
+  defaultNotFoundComponent: NotFoundPage,
+});
 
 declare module '@tanstack/react-router' {
   interface Register {

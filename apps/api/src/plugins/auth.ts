@@ -1,6 +1,7 @@
 import { db } from '@optsolv/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { fromNodeHeaders } from 'better-auth/node';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { env } from '../config/env';
 
@@ -63,4 +64,14 @@ export async function registerAuth(app: FastifyInstance) {
     const response = await auth.handler(await toWebRequest(request));
     return sendWebResponse(response, reply);
   });
+}
+
+export async function requireSession(request: FastifyRequest, reply: FastifyReply) {
+  const session = await auth.api.getSession({
+    headers: fromNodeHeaders(request.headers),
+  });
+
+  if (!session?.user) {
+    return reply.status(401).send({ message: 'Sessao obrigatoria' });
+  }
 }

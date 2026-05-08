@@ -12,28 +12,13 @@ describe('GET /api/projects/matrix', () => {
     await app.close();
   });
 
-  it('retorna matriz hierarquica com totais calculados', async () => {
+  it('bloqueia acesso sem sessao autenticada', async () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/projects/matrix?year=2025',
     });
 
-    expect(response.statusCode).toBe(200);
-
-    const body = response.json<{
-      clients: Array<{
-        id: string;
-        name: string;
-        projects: Array<{ months: Array<{ year: number; month: number }> }>;
-      }>;
-      total: { revenue: number; marginValue: number; remainingBudget: number };
-    }>();
-
-    expect(body.clients.length).toBeGreaterThan(0);
-    expect(body.clients[0]?.projects.length).toBeGreaterThan(0);
-    expect(body.clients[0]?.projects[0]?.months.every((month) => month.year === 2025)).toBe(true);
-    expect(body.total.revenue).toBeGreaterThan(0);
-    expect(body.total.marginValue).toBeTypeOf('number');
-    expect(body.total.remainingBudget).toBeTypeOf('number');
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toMatchObject({ message: 'Sessao obrigatoria' });
   });
 });

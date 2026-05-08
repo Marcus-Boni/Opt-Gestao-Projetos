@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Clock, TrendingUp, WalletCards } from 'lucide-react';
+import { BriefcaseBusiness, Clock, Search, TrendingUp, WalletCards } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   ExportButton,
@@ -12,18 +12,28 @@ import {
   numberFormatter,
   percentFormatter,
 } from '@/features/projects-matrix/utils/formatters';
+import { filterProjectsMatrixBySearch } from '@/features/projects-matrix/utils/search';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { EmptyState, ErrorState, LoadingState } from '@/shared/components/StateViews';
+import { EmptyState, ErrorState, ProjectsPageSkeleton } from '@/shared/components/StateViews';
+import { Input } from '@/shared/components/ui/input';
 
 export function ProjectsPage() {
   const [filters, setFilters] = useState<MatrixFilters>({ year: 2025 });
+  const [search, setSearch] = useState('');
   const matrixQuery = useProjectsMatrix(filters);
+  const filteredMatrix = useMemo(
+    () =>
+      matrixQuery.data ? filterProjectsMatrixBySearch(matrixQuery.data, search) : matrixQuery.data,
+    [matrixQuery.data, search],
+  );
 
   const totalProjects = useMemo(
-    () => matrixQuery.data?.clients.reduce((sum, client) => sum + client.projects.length, 0) ?? 0,
-    [matrixQuery.data],
+    () => filteredMatrix?.clients.reduce((sum, client) => sum + client.projects.length, 0) ?? 0,
+    [filteredMatrix],
   );
+
+  if (matrixQuery.isLoading) return <ProjectsPageSkeleton />;
 
   return (
     <>
@@ -64,11 +74,19 @@ export function ProjectsPage() {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3">
+        <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 xl:flex-row xl:items-center xl:justify-between">
           <YearMonthFilter value={filters} onChange={setFilters} />
+          <div className="flex min-w-72 items-center gap-2 rounded-md border bg-background px-3">
+            <Search aria-hidden="true" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por cliente, projeto ou codigo"
+              className="border-0 px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
         </div>
 
-        {matrixQuery.isLoading ? <LoadingState /> : null}
         {matrixQuery.isError ? (
           <ErrorState
             title="Nao foi possivel carregar a matriz"
@@ -76,14 +94,18 @@ export function ProjectsPage() {
             onRetry={() => matrixQuery.refetch()}
           />
         ) : null}
-        {matrixQuery.data && matrixQuery.data.clients.length === 0 ? (
+        {filteredMatrix && filteredMatrix.clients.length === 0 ? (
           <EmptyState
-            title="Sem projetos no filtro"
-            description="Altere ano ou mes para ampliar a busca."
+            title={search ? 'Nenhum resultado encontrado' : 'Sem projetos no filtro'}
+            description={
+              search
+                ? 'Revise o termo de busca ou limpe o campo para ver todos os projetos.'
+                : 'Altere ano ou mes para ampliar a busca.'
+            }
           />
         ) : null}
-        {matrixQuery.data && matrixQuery.data.clients.length > 0 ? (
-          <ProjectsMatrix matrix={matrixQuery.data} />
+        {filteredMatrix && filteredMatrix.clients.length > 0 ? (
+          <ProjectsMatrix matrix={filteredMatrix} />
         ) : null}
       </main>
     </>

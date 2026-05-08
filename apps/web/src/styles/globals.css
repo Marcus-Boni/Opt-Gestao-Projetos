@@ -11,8 +11,11 @@
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-brand-500: hsl(var(--brand-500));
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
   --color-muted: hsl(var(--muted));
@@ -42,6 +45,7 @@
 @layer base {
   :root {
     --primary: 22 100% 52%;
+    --brand-500: 22 100% 52%;
     --primary-foreground: 0 0% 100%;
     --secondary: 222 47% 11%;
     --secondary-foreground: 0 0% 98%;
@@ -53,6 +57,8 @@
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 22 100% 52%;
@@ -72,8 +78,11 @@
     --foreground: 0 0% 98%;
     --card: 222 47% 9%;
     --card-foreground: 0 0% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 0 0% 98%;
     --primary: 22 100% 58%;
-    --primary-foreground: 222 47% 6%;
+    --brand-500: 22 100% 58%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 217 33% 18%;
     --secondary-foreground: 0 0% 98%;
     --accent: 22 30% 18%;

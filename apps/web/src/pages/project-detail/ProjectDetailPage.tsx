@@ -19,7 +19,7 @@ import {
 } from '@/features/projects-matrix/utils/formatters';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { ErrorState, LoadingState } from '@/shared/components/StateViews';
+import { ErrorState, ProjectDetailSkeleton } from '@/shared/components/StateViews';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
@@ -29,14 +29,7 @@ export function ProjectDetailPage() {
   const detail = detailQuery.data;
 
   if (detailQuery.isLoading) {
-    return (
-      <>
-        <PageHeader title="Carregando projeto" />
-        <main className="p-5">
-          <LoadingState />
-        </main>
-      </>
-    );
+    return <ProjectDetailSkeleton />;
   }
 
   if (detailQuery.isError || !detail) {
