@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { z } from 'zod';
 
 const envSchema = z.object({
@@ -5,6 +6,7 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().default(3333),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   WEB_URL: z.string().url().default('http://localhost:5173'),
+  API_URL: z.string().url().default('http://localhost:3333'),
   BETTER_AUTH_SECRET: z.string().optional(),
   BETTER_AUTH_URL: z.string().url().optional(),
   MICROSOFT_CLIENT_ID: z.string().optional(),
@@ -15,7 +17,9 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
+  // biome-ignore lint/suspicious/noConsole: fatal boot-time error must reach stderr before process.exit
   console.error('Variáveis de ambiente inválidas:');
+  // biome-ignore lint/suspicious/noConsole: fatal boot-time error must reach stderr before process.exit
   console.error(parsed.error.flatten().fieldErrors);
   process.exit(1);
 }

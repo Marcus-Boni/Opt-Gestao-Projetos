@@ -16,8 +16,10 @@
     "lint": "biome check --write ."
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "drizzle-orm": "^0.40.0",
-    "postgres": "^3.4.5"
+    "postgres": "^3.4.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@optsolv/config": "workspace:*",

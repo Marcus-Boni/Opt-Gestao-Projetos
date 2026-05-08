@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Get-ChildItem -Recurse -Path \"C:\\\\Users\\\\mgalv\\\\Projetos-Programacao\\\\Projetos-Optsolv\\\\Opt-PMS\" -File | Where-Object { $_.FullName -notmatch \"node_modules|pnpm-lock\" } | Select-Object FullName | Sort-Object FullName)"
+      "PowerShell(Get-ChildItem -Recurse -Path \"C:\\\\Users\\\\mgalv\\\\Projetos-Programacao\\\\Projetos-Optsolv\\\\Opt-PMS\" -File | Where-Object { $_.FullName -notmatch \"node_modules|pnpm-lock\" } | Select-Object FullName | Sort-Object FullName)",
+      "Bash(grep -E \"^d.*\\\\s\\(apps|packages\\)$\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(pnpm --filter @optsolv/web typecheck)",
+      "Bash(git commit *)"
     ]
   }
 }

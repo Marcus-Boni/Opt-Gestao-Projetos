@@ -1,5 +1,5 @@
-import { db } from '@optsolv/db';
 import type { Database } from '@optsolv/db';
+import { db } from '@optsolv/db';
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 

@@ -43,3 +43,4 @@ storybook.pid
 
 # drizzle-kit generated migration artifacts
 packages/db/drizzle/
+.omx

@@ -22,23 +22,15 @@ export function HelloPage() {
       </div>
       <Card className="w-full max-w-sm shadow-lg">
         <CardHeader className="flex flex-col items-center gap-4 pt-8">
-          <img
-            src="/assets/logo.png"
-            alt="Logo Optsolv"
-            className="h-14 w-auto"
-          />
+          <img src="/assets/logo.png" alt="Logo Optsolv" className="h-14 w-auto" />
           <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
             Optsolv PMS
           </CardTitle>
         </CardHeader>
         <Separator />
         <CardContent className="flex flex-col items-center gap-3 py-6">
-          <p className="text-sm text-muted-foreground text-center">
-            Sistema de Gestão de Projetos
-          </p>
-          <Badge className="bg-primary text-primary-foreground">
-            v0.1.0 · M1 Fundação
-          </Badge>
+          <p className="text-sm text-muted-foreground text-center">Sistema de Gestão de Projetos</p>
+          <Badge className="bg-primary text-primary-foreground">v0.1.0 · M1 Fundação</Badge>
         </CardContent>
       </Card>
     </div>

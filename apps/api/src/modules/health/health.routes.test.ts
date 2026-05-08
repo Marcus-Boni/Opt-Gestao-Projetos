@@ -1,9 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { buildServer } from '../../server';
 
 describe('GET /health', () => {
+  let app: Awaited<ReturnType<typeof buildServer>>;
+
+  afterAll(async () => {
+    await app.close();
+  });
+
   it('retorna 200 com status ok', async () => {
-    const app = await buildServer();
+    app = await buildServer();
     const response = await app.inject({
       method: 'GET',
       url: '/health',
