@@ -11,7 +11,7 @@ type RoleStore = {
 export const useRoleStore = create<RoleStore>()(
   persist(
     (set) => ({
-      role: 'usuario',
+      role: 'admin',
       setRole: (role) => set({ role }),
     }),
     { name: 'optsolv-role' },
