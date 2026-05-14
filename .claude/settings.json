@@ -1,0 +1,6 @@
+{
+  "defaultMode": "bypassPermissions",
+  "permissions": {
+    "allow": ["Bash(pnpm *)", "Bash(git *)", "Bash(npx *)", "Bash(node *)"]
+  }
+}

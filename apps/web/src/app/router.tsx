@@ -1,29 +1,10 @@
 import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router';
 import { type ComponentType, lazy, Suspense } from 'react';
-import { PlaceholderPage } from '@/pages/placeholder/PlaceholderPage';
 import { ForbiddenPage } from '@/pages/system/ForbiddenPage';
 import { NotFoundPage } from '@/pages/system/NotFoundPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AuthPageSkeleton, LoadingState } from '@/shared/components/StateViews';
 import { AppShell } from './layouts/AppShell';
-
-const LandingPage = lazy(() =>
-  import('@/pages/landing/LandingPage').then((module) => ({ default: module.LandingPage })),
-);
-const LoginPage = lazy(() =>
-  import('@/pages/auth/LoginPage').then((module) => ({ default: module.LoginPage })),
-);
-const RegisterPage = lazy(() =>
-  import('@/pages/auth/RegisterPage').then((module) => ({ default: module.RegisterPage })),
-);
-const ProjectsPage = lazy(() =>
-  import('@/pages/projects/ProjectsPage').then((module) => ({ default: module.ProjectsPage })),
-);
-const ProjectDetailPage = lazy(() =>
-  import('@/pages/project-detail/ProjectDetailPage').then((module) => ({
-    default: module.ProjectDetailPage,
-  })),
-);
 
 function withSuspense(Component: ComponentType) {
   return function SuspendedRoute() {
@@ -51,6 +32,44 @@ function withAuthSuspense(Component: ComponentType) {
   };
 }
 
+// Lazy page imports
+const LandingPage = lazy(() =>
+  import('@/pages/landing/LandingPage').then((m) => ({ default: m.LandingPage })),
+);
+const LoginPage = lazy(() =>
+  import('@/pages/auth/LoginPage').then((m) => ({ default: m.LoginPage })),
+);
+const RegisterPage = lazy(() =>
+  import('@/pages/auth/RegisterPage').then((m) => ({ default: m.RegisterPage })),
+);
+const DashboardPage = lazy(() =>
+  import('@/pages/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+);
+const TasksPage = lazy(() =>
+  import('@/pages/tasks/TasksPage').then((m) => ({ default: m.TasksPage })),
+);
+const ProjectsPage = lazy(() =>
+  import('@/pages/projects/ProjectsPage').then((m) => ({ default: m.ProjectsPage })),
+);
+const ProjectDetailPage = lazy(() =>
+  import('@/pages/project-detail/ProjectDetailPage').then((m) => ({
+    default: m.ProjectDetailPage,
+  })),
+);
+const FinanceiroPage = lazy(() =>
+  import('@/pages/financeiro/FinanceiroPage').then((m) => ({ default: m.FinanceiroPage })),
+);
+const ReportsPage = lazy(() =>
+  import('@/pages/reports/ReportsPage').then((m) => ({ default: m.ReportsPage })),
+);
+const ResourcesPage = lazy(() =>
+  import('@/pages/resources/ResourcesPage').then((m) => ({ default: m.ResourcesPage })),
+);
+const SettingsPage = lazy(() =>
+  import('@/pages/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+);
+
+// Route tree
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
   notFoundComponent: NotFoundPage,
@@ -90,6 +109,18 @@ const appRoute = createRoute({
   ),
 });
 
+const dashboardRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/dashboard',
+  component: withSuspense(DashboardPage),
+});
+
+const tasksRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/tarefas',
+  component: withSuspense(TasksPage),
+});
+
 const projectsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/projetos',
@@ -102,22 +133,28 @@ const projectDetailRoute = createRoute({
   component: withSuspense(ProjectDetailPage),
 });
 
+const financeiroRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/financeiro',
+  component: withSuspense(FinanceiroPage),
+});
+
 const reportsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/relatorios',
-  component: () => <PlaceholderPage title="Relatorios" />,
+  component: withSuspense(ReportsPage),
 });
 
-const collaboratorsRoute = createRoute({
+const resourcesRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: '/colaboradores',
-  component: () => <PlaceholderPage title="Colaboradores" />,
+  path: '/recursos',
+  component: withSuspense(ResourcesPage),
 });
 
 const settingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/configuracoes',
-  component: () => <PlaceholderPage title="Configuracoes" />,
+  component: withSuspense(SettingsPage),
 });
 
 const routeTree = rootRoute.addChildren([
@@ -126,10 +163,13 @@ const routeTree = rootRoute.addChildren([
   registerRoute,
   forbiddenRoute,
   appRoute.addChildren([
+    dashboardRoute,
+    tasksRoute,
     projectsRoute,
     projectDetailRoute,
+    financeiroRoute,
     reportsRoute,
-    collaboratorsRoute,
+    resourcesRoute,
     settingsRoute,
   ]),
 ]);

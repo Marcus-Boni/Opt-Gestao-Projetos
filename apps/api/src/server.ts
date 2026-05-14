@@ -1,8 +1,11 @@
 import { pathToFileURL } from 'node:url';
 import Fastify from 'fastify';
 import { env } from './config/env';
+import { dashboardRoutes } from './modules/dashboard/dashboard.routes';
 import { healthRoutes } from './modules/health/health.routes';
 import { projectRoutes } from './modules/projects/project.routes';
+import { resourcesRoutes } from './modules/resources/resources.routes';
+import { tasksRoutes } from './modules/tasks/tasks.routes';
 import { registerAuth } from './plugins/auth';
 import { registerCors } from './plugins/cors';
 import { dbPlugin } from './plugins/db';
@@ -25,6 +28,9 @@ export async function buildServer() {
   await registerAuth(app);
   await app.register(healthRoutes);
   await app.register(projectRoutes);
+  await app.register(dashboardRoutes);
+  await app.register(tasksRoutes);
+  await app.register(resourcesRoutes);
 
   return app;
 }

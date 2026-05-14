@@ -33,6 +33,12 @@
   --color-financial-positive: hsl(var(--financial-positive));
   --color-financial-negative: hsl(var(--financial-negative));
   --color-financial-warning: hsl(var(--financial-warning));
+  --color-fin-positive: hsl(var(--fin-positive));
+  --color-fin-warning: hsl(var(--fin-warning));
+  --color-fin-negative: hsl(var(--fin-negative));
+  --color-health-ok: hsl(var(--health-ok));
+  --color-health-alert: hsl(var(--health-alert));
+  --color-health-critical: hsl(var(--health-critical));
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -70,6 +76,12 @@
     --financial-positive: 142 71% 45%;
     --financial-negative: 0 84% 60%;
     --financial-warning: 38 92% 50%;
+    --fin-positive: 142 71% 45%;
+    --fin-warning: 38 92% 50%;
+    --fin-negative: 0 84% 60%;
+    --health-ok: 142 71% 45%;
+    --health-alert: 38 92% 50%;
+    --health-critical: 0 84% 60%;
     --radius: 0.625rem;
   }
 
@@ -100,6 +112,12 @@
     --financial-positive: 142 71% 55%;
     --financial-negative: 0 84% 70%;
     --financial-warning: 38 92% 60%;
+    --fin-positive: 142 71% 55%;
+    --fin-warning: 38 92% 60%;
+    --fin-negative: 0 84% 70%;
+    --health-ok: 142 71% 55%;
+    --health-alert: 38 92% 60%;
+    --health-critical: 0 84% 70%;
   }
 
   * {

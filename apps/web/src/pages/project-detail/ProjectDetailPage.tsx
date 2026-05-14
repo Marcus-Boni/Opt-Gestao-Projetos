@@ -1,159 +1,112 @@
 import { useParams } from '@tanstack/react-router';
-import { BarChart3, Clock, TrendingUp, WalletCards } from 'lucide-react';
+import { DollarSign, Gauge, TrendingUp, Users } from 'lucide-react';
 import {
-  Bar,
-  CartesianGrid,
-  ComposedChart,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { useProjectDetail } from '@/features/projects-matrix';
-import {
-  currencyFormatter,
-  formatDate,
-  formatMonth,
-  percentFormatter,
-} from '@/features/projects-matrix/utils/formatters';
+  CostsTab,
+  OverviewTab,
+  ProjectStatusBadge,
+  ResourcesTab,
+  useProjectDetailFull,
+} from '@/features/projects';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { ErrorState, ProjectDetailSkeleton } from '@/shared/components/StateViews';
-import { Badge } from '@/shared/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+
+const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const PCT = new Intl.NumberFormat('pt-BR', {
+  style: 'percent',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
 
 export function ProjectDetailPage() {
   const { projectId } = useParams({ from: '/app/projetos/$projectId' });
-  const detailQuery = useProjectDetail(projectId);
-  const detail = detailQuery.data;
+  const query = useProjectDetailFull(projectId);
+  const detail = query.data;
 
-  if (detailQuery.isLoading) {
-    return <ProjectDetailSkeleton />;
-  }
+  if (query.isLoading) return <ProjectDetailSkeleton />;
 
-  if (detailQuery.isError || !detail) {
+  if (query.isError || !detail) {
     return (
       <>
         <PageHeader title="Projeto" />
         <main className="p-5">
           <ErrorState
-            title="Projeto nao encontrado"
-            description="A API nao retornou dados para este projeto."
-            onRetry={() => detailQuery.refetch()}
+            title="Projeto não encontrado"
+            description="A API não retornou dados para este projeto."
+            onRetry={() => query.refetch()}
           />
         </main>
       </>
     );
   }
 
-  const chartData = detail.months.map((month) => ({
-    name: formatMonth(month.year, month.month),
-    custo: month.harvestCost,
-    margem: month.marginValue,
-  }));
+  const budgetUsedPct = detail.budgetTotal > 0 ? detail.budgetUsed / detail.budgetTotal : 0;
 
   return (
     <>
       <PageHeader
-        eyebrow={detail.client.name}
+        eyebrow={detail.clientName}
         title={detail.name}
-        description={`${formatDate(detail.startDate)} ate ${formatDate(detail.endDate)}`}
-        actions={<Badge variant="secondary">{detail.status}</Badge>}
+        {...(detail.code ? { description: detail.code } : {})}
+        actions={<ProjectStatusBadge status={detail.status} size="md" />}
       />
       <main className="flex flex-col gap-4 p-5">
+        {/* KPI cards */}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <KpiCard
-            title="Faturamento"
-            value={currencyFormatter.format(detail.revenue)}
-            icon={WalletCards}
+            title="Progresso"
+            value={`${detail.progressActual.toFixed(0)}%`}
+            description={`Planejado: ${detail.progressPlanned.toFixed(0)}%`}
+            icon={Gauge}
+            tone={detail.progressActual >= detail.progressPlanned ? 'positive' : 'warning'}
           />
           <KpiCard
-            title="Custo Harvest"
-            value={currencyFormatter.format(detail.harvestCost)}
-            icon={Clock}
+            title="Budget Realizado"
+            value={BRL.format(detail.budgetUsed)}
+            description={`Total: ${BRL.format(detail.budgetTotal)}`}
+            icon={DollarSign}
+            tone={budgetUsedPct > 0.85 ? 'negative' : budgetUsedPct > 0.7 ? 'warning' : 'positive'}
           />
           <KpiCard
-            title="Margem R$"
-            value={currencyFormatter.format(detail.marginValue)}
+            title="Margem"
+            value={detail.marginPercent !== null ? PCT.format(detail.marginPercent) : '—'}
             icon={TrendingUp}
-            tone={detail.marginValue < 0 ? 'negative' : 'positive'}
+            tone={
+              detail.marginPercent === null
+                ? 'default'
+                : detail.marginPercent < 0
+                  ? 'negative'
+                  : detail.marginPercent < 0.05
+                    ? 'warning'
+                    : 'positive'
+            }
           />
           <KpiCard
-            title="Margem %"
-            value={
-              detail.marginPercent === null ? '-' : percentFormatter.format(detail.marginPercent)
-            }
-            icon={BarChart3}
+            title="Equipe"
+            value={String(detail.team.length)}
+            description="Membros alocados"
+            icon={Users}
           />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Evolucao mensal</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => currencyFormatter.format(Number(value))} />
-                <Bar dataKey="custo" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                <Line
-                  type="monotone"
-                  dataKey="margem"
-                  stroke="hsl(var(--success))"
-                  strokeWidth={2}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-4 xl:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Colaboradores</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-2">
-                {detail.collaborators.map((item) => (
-                  <div
-                    key={item.id}
-                    className="grid grid-cols-[1fr_90px_120px] gap-3 rounded-md border p-3 text-sm"
-                  >
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-right font-mono tabular-nums">{item.hours}h</span>
-                    <span className="text-right font-mono tabular-nums">
-                      {currencyFormatter.format(item.cost)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Apontamentos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-2">
-                {detail.timeEntries.map((item) => (
-                  <div
-                    key={item.id}
-                    className="grid grid-cols-[96px_1fr_70px] gap-3 rounded-md border p-3 text-sm"
-                  >
-                    <span className="text-muted-foreground">{formatDate(item.date)}</span>
-                    <span className="truncate">{item.task}</span>
-                    <span className="text-right font-mono tabular-nums">{item.hours}h</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Tabs */}
+        <Tabs defaultValue="overview">
+          <TabsList>
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="recursos">Recursos</TabsTrigger>
+            <TabsTrigger value="custos">Custos</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="mt-4">
+            <OverviewTab detail={detail} />
+          </TabsContent>
+          <TabsContent value="recursos" className="mt-4">
+            <ResourcesTab detail={detail} />
+          </TabsContent>
+          <TabsContent value="custos" className="mt-4">
+            <CostsTab detail={detail} />
+          </TabsContent>
+        </Tabs>
       </main>
     </>
   );

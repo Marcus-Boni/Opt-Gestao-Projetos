@@ -16,5 +16,5 @@ export function getAuthRedirectTarget(pathnameWithSearch: string) {
 export function getPostLoginRedirect(search: string) {
   const params = new URLSearchParams(search);
   const redirect = params.get('redirect');
-  return redirect?.startsWith('/app') ? redirect : '/app/projetos';
+  return redirect?.startsWith('/app') ? redirect : '/app/dashboard';
 }

@@ -1,112 +1,105 @@
-import { BriefcaseBusiness, Clock, Search, TrendingUp, WalletCards } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import {
-  ExportButton,
-  ProjectsMatrix,
-  useProjectsMatrix,
-  YearMonthFilter,
-} from '@/features/projects-matrix';
-import type { MatrixFilters } from '@/features/projects-matrix/api/projectsMatrixApi';
-import {
-  currencyFormatter,
-  numberFormatter,
-  percentFormatter,
-} from '@/features/projects-matrix/utils/formatters';
-import { filterProjectsMatrixBySearch } from '@/features/projects-matrix/utils/search';
-import { KpiCard } from '@/shared/components/KpiCard';
+import { ProjectTable, useProjectCenter } from '@/features/projects';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { EmptyState, ErrorState, ProjectsPageSkeleton } from '@/shared/components/StateViews';
+import { EmptyState, ErrorState, LoadingState } from '@/shared/components/StateViews';
 import { Input } from '@/shared/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
+
+function normalize(s: string) {
+  return s
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
+}
 
 export function ProjectsPage() {
-  const [filters, setFilters] = useState<MatrixFilters>({ year: 2025 });
+  const query = useProjectCenter();
   const [search, setSearch] = useState('');
-  const matrixQuery = useProjectsMatrix(filters);
-  const filteredMatrix = useMemo(
-    () =>
-      matrixQuery.data ? filterProjectsMatrixBySearch(matrixQuery.data, search) : matrixQuery.data,
-    [matrixQuery.data, search],
-  );
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const totalProjects = useMemo(
-    () => filteredMatrix?.clients.reduce((sum, client) => sum + client.projects.length, 0) ?? 0,
-    [filteredMatrix],
-  );
+  const filteredGroups = useMemo(() => {
+    if (!query.data) return [];
+    const term = normalize(search.trim());
+    return query.data.groups
+      .map((group) => ({
+        ...group,
+        projects: group.projects.filter((p) => {
+          const matchesSearch =
+            !term || normalize(`${p.name} ${p.clientName} ${p.code ?? ''}`).includes(term);
+          const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+          return matchesSearch && matchesStatus;
+        }),
+      }))
+      .filter((g) => g.projects.length > 0);
+  }, [query.data, search, statusFilter]);
 
-  if (matrixQuery.isLoading) return <ProjectsPageSkeleton />;
+  if (query.isLoading) {
+    return (
+      <>
+        <PageHeader eyebrow="Project Center" title="Projetos" />
+        <main className="p-5">
+          <LoadingState />
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
       <PageHeader
-        eyebrow="Matriz de Projetos"
+        eyebrow="Project Center"
         title="Projetos"
-        description="Visao hierarquica financeira por cliente, projeto e periodo."
-        actions={<ExportButton matrix={matrixQuery.data} />}
+        description="Portfólio agrupado por gerente responsável."
       />
       <main className="flex flex-col gap-4 p-5">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <KpiCard
-            title="Faturamento"
-            value={currencyFormatter.format(matrixQuery.data?.total.revenue ?? 0)}
-            icon={WalletCards}
-          />
-          <KpiCard
-            title="Margem"
-            value={currencyFormatter.format(matrixQuery.data?.total.marginValue ?? 0)}
-            icon={TrendingUp}
-            tone={(matrixQuery.data?.total.marginValue ?? 0) < 0 ? 'negative' : 'positive'}
-          />
-          <KpiCard
-            title="Margem %"
-            value={
-              matrixQuery.data?.total.marginPercent === null ||
-              matrixQuery.data?.total.marginPercent === undefined
-                ? '-'
-                : percentFormatter.format(matrixQuery.data.total.marginPercent)
-            }
-            icon={BriefcaseBusiness}
-          />
-          <KpiCard
-            title="Horas"
-            value={numberFormatter.format(matrixQuery.data?.total.hours ?? 0)}
-            description={`${totalProjects} projetos ativos no filtro`}
-            icon={Clock}
-          />
-        </div>
-
-        <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 xl:flex-row xl:items-center xl:justify-between">
-          <YearMonthFilter value={filters} onChange={setFilters} />
-          <div className="flex min-w-72 items-center gap-2 rounded-md border bg-background px-3">
-            <Search aria-hidden="true" />
+        {/* Filters */}
+        <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 sm:flex-row sm:items-center">
+          <div className="flex flex-1 items-center gap-2 rounded-md border bg-background px-3">
+            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <Input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar por cliente, projeto ou codigo"
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por projeto, cliente ou código"
               className="border-0 px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="no_prazo">No prazo</SelectItem>
+              <SelectItem value="alerta">Alerta</SelectItem>
+              <SelectItem value="critico">Crítico</SelectItem>
+              <SelectItem value="concluido">Concluído</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {matrixQuery.isError ? (
+        {query.isError && (
           <ErrorState
-            title="Nao foi possivel carregar a matriz"
+            title="Não foi possível carregar os projetos"
             description="Verifique a API e tente novamente."
-            onRetry={() => matrixQuery.refetch()}
+            onRetry={() => query.refetch()}
           />
-        ) : null}
-        {filteredMatrix && filteredMatrix.clients.length === 0 ? (
+        )}
+
+        {!query.isError && filteredGroups.length === 0 && (
           <EmptyState
-            title={search ? 'Nenhum resultado encontrado' : 'Sem projetos no filtro'}
-            description={
-              search
-                ? 'Revise o termo de busca ou limpe o campo para ver todos os projetos.'
-                : 'Altere ano ou mes para ampliar a busca.'
-            }
+            title="Nenhum projeto encontrado"
+            description="Ajuste os filtros para ampliar a busca."
           />
-        ) : null}
-        {filteredMatrix && filteredMatrix.clients.length > 0 ? (
-          <ProjectsMatrix matrix={filteredMatrix} />
-        ) : null}
+        )}
+
+        {filteredGroups.length > 0 && <ProjectTable groups={filteredGroups} />}
       </main>
     </>
   );
