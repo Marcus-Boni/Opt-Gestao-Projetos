@@ -21,13 +21,40 @@ export type TasksDto = {
   tasks: TaskDto[];
 };
 
-export async function fetchTasks(projectId?: string): Promise<TasksDto> {
-  const response = await http.get<TasksDto>('/api/tasks', {
-    params: projectId ? { projectId } : undefined,
-  });
+export type FetchTasksParams = {
+  projectId?: string;
+  clientName?: string;
+  status?: string;
+  search?: string;
+};
+
+export async function fetchTasks(params?: FetchTasksParams): Promise<TasksDto> {
+  const response = await http.get<TasksDto>('/api/tasks', { params });
+  return response.data;
+}
+
+export async function createTask(data: {
+  title: string;
+  projectId: string;
+  priority: TaskPriority;
+  status?: TaskStatus;
+}): Promise<TaskDto> {
+  const response = await http.post<TaskDto>('/api/tasks', data);
+  return response.data;
+}
+
+export async function updateTask(
+  taskId: string,
+  data: { title?: string; projectId?: string; priority?: TaskPriority; status?: TaskStatus },
+): Promise<TaskDto> {
+  const response = await http.put<TaskDto>(`/api/tasks/${taskId}`, data);
   return response.data;
 }
 
 export async function updateTaskStatus(taskId: string, status: TaskStatus): Promise<void> {
   await http.patch(`/api/tasks/${taskId}/status`, { status });
+}
+
+export async function deleteTask(taskId: string): Promise<void> {
+  await http.delete(`/api/tasks/${taskId}`);
 }

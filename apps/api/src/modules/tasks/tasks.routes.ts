@@ -1,7 +1,10 @@
+import crypto from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { requireSession } from '../../plugins/auth';
+import { projectFixtures } from '../projects/project.fixtures';
 
 type TaskStatus = 'todo' | 'doing' | 'done';
+type TaskPriority = 'alta' | 'media' | 'baixa';
 
 const taskStore: {
   id: string;
@@ -11,7 +14,7 @@ const taskStore: {
   clientName: string;
   assigneeName: string | null;
   status: TaskStatus;
-  priority: 'alta' | 'media' | 'baixa';
+  priority: TaskPriority;
   dueDate: string | null;
   adoWorkItemId: string | null;
   isOverdue: boolean;
@@ -85,9 +88,101 @@ const taskStore: {
 
 export async function tasksRoutes(app: FastifyInstance) {
   app.get('/api/tasks', { preHandler: requireSession }, async (req, reply) => {
-    const { projectId } = req.query as { projectId?: string };
-    const tasks = projectId ? taskStore.filter((t) => t.projectId === projectId) : taskStore;
+    const { projectId, clientName, status, search } = req.query as {
+      projectId?: string;
+      clientName?: string;
+      status?: string;
+      search?: string;
+    };
+
+    let tasks = [...taskStore];
+
+    if (projectId) {
+      tasks = tasks.filter((t) => t.projectId === projectId);
+    }
+
+    if (clientName) {
+      tasks = tasks.filter((t) => t.clientName === clientName);
+    }
+
+    if (status) {
+      tasks = tasks.filter((t) => t.status === status);
+    }
+
+    if (search) {
+      const lowerSearch = search.toLowerCase();
+      tasks = tasks.filter((t) => t.title.toLowerCase().includes(lowerSearch));
+    }
+
     return reply.send({ tasks });
+  });
+
+  app.post('/api/tasks', { preHandler: requireSession }, async (req, reply) => {
+    const body = req.body as {
+      title: string;
+      projectId: string;
+      priority: TaskPriority;
+      status?: TaskStatus;
+    };
+    const project = projectFixtures.find((p) => p.id === body.projectId);
+
+    if (!project) return reply.status(400).send({ error: 'Project not found' });
+
+    const newTask = {
+      id: crypto.randomUUID(),
+      title: body.title,
+      projectId: body.projectId,
+      projectName: project.name,
+      clientName: project.clientName,
+      assigneeName: null,
+      status: body.status || 'todo',
+      priority: body.priority,
+      dueDate: null,
+      adoWorkItemId: null,
+      isOverdue: false,
+    };
+
+    taskStore.push(newTask);
+    return reply.status(201).send(newTask);
+  });
+
+  app.put('/api/tasks/:taskId', { preHandler: requireSession }, async (req, reply) => {
+    const { taskId } = req.params as { taskId: string };
+    const body = req.body as {
+      title?: string;
+      projectId?: string;
+      priority?: TaskPriority;
+      status?: TaskStatus;
+    };
+
+    const taskIndex = taskStore.findIndex((t) => t.id === taskId);
+    if (taskIndex === -1) return reply.status(404).send({ error: 'Task not found' });
+
+    const task = taskStore[taskIndex];
+
+    if (body.projectId && body.projectId !== task.projectId) {
+      const project = projectFixtures.find((p) => p.id === body.projectId);
+      if (!project) return reply.status(400).send({ error: 'Project not found' });
+      task.projectId = project.id;
+      task.projectName = project.name;
+      task.clientName = project.clientName;
+    }
+
+    if (body.title) task.title = body.title;
+    if (body.priority) task.priority = body.priority;
+    if (body.status) task.status = body.status;
+
+    taskStore[taskIndex] = task;
+    return reply.send(task);
+  });
+
+  app.delete('/api/tasks/:taskId', { preHandler: requireSession }, async (req, reply) => {
+    const { taskId } = req.params as { taskId: string };
+    const taskIndex = taskStore.findIndex((t) => t.id === taskId);
+    if (taskIndex === -1) return reply.status(404).send({ error: 'Task not found' });
+
+    taskStore.splice(taskIndex, 1);
+    return reply.send({ success: true });
   });
 
   app.patch('/api/tasks/:taskId/status', { preHandler: requireSession }, async (req, reply) => {

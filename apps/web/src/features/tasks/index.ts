@@ -1,4 +1,12 @@
-export type { TaskDto, TaskPriority, TaskStatus, TasksDto } from './api/tasksApi';
+export type { FetchTasksParams, TaskDto, TaskPriority, TaskStatus, TasksDto } from './api/tasksApi';
 export { KanbanBoard } from './components/KanbanBoard';
 export { TaskCard } from './components/TaskCard';
-export { useTasks, useUpdateTaskStatus } from './hooks/useTasks';
+export { TaskDialog } from './components/TaskDialog';
+export { TaskList } from './components/TaskList';
+export {
+  useCreateTask,
+  useDeleteTask,
+  useTasks,
+  useUpdateTask,
+  useUpdateTaskStatus,
+} from './hooks/useTasks';

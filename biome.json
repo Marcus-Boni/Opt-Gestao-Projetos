@@ -34,6 +34,9 @@
         "useConsistentArrayType": "error",
         "noNonNullAssertion": "warn"
       },
+      "a11y": {
+        "noLabelWithoutControl": "off"
+      },
       "correctness": {
         "useExhaustiveDependencies": "warn"
       }

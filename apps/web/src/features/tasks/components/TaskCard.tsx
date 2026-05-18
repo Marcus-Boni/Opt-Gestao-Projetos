@@ -1,19 +1,34 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Edit2, MoreVertical, Trash2 } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
 import { cn } from '@/shared/lib/utils';
 import type { TaskDto, TaskPriority } from '../api/tasksApi';
 
 const PRIORITY_CONFIG: Record<TaskPriority, { label: string; class: string }> = {
-  alta: { label: 'Alta', class: 'text-health-critical bg-health-critical/10' },
+  alta: {
+    label: 'Alta',
+    class: 'text-health-critical bg-health-critical/10',
+  },
   media: { label: 'Média', class: 'text-health-alert bg-health-alert/10' },
   baixa: { label: 'Baixa', class: 'text-health-ok bg-health-ok/10' },
 };
 
-type Props = { task: TaskDto };
+type Props = {
+  task: TaskDto;
+  onEdit: (task: TaskDto) => void;
+  onDelete: (task: TaskDto) => void;
+};
 
-export function TaskCard({ task }: Props) {
+export function TaskCard({ task, onEdit, onDelete }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
   });
@@ -30,10 +45,44 @@ export function TaskCard({ task }: Props) {
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Card className="cursor-grab p-3 active:cursor-grabbing hover:border-primary/30 hover:shadow-sm transition-shadow">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium leading-snug">{task.title}</p>
-          {task.isOverdue && (
-            <AlertCircle className="size-4 shrink-0 text-health-critical" aria-label="Atrasada" />
-          )}
+          <p className="text-sm font-medium leading-snug pr-2">{task.title}</p>
+          <div className="flex items-center gap-1 shrink-0">
+            {task.isOverdue && (
+              <AlertCircle className="size-4 shrink-0 text-health-critical" aria-label="Atrasada" />
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6 -mr-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="size-4" />
+                  <span className="sr-only">Ações da tarefa</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <DropdownMenuItem onClick={() => onEdit(task)}>
+                  <Edit2 className="mr-2 size-4" />
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDelete(task)}
+                  className="text-health-critical focus:text-health-critical"
+                >
+                  <Trash2 className="mr-2 size-4" />
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-medium', priority.class)}>
