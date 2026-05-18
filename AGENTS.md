@@ -2,167 +2,139 @@
 
 ## Papel deste arquivo
 
-Contrato principal para agentes de IA neste template.
+Contrato principal para agentes de IA no projeto **Optsolv PMS**.
 
-Leia este arquivo primeiro. Ele deve permanecer curto, operacional e estável. Não duplique aqui o conteúdo detalhado de `docs/`.
+Leia este arquivo primeiro. Ele deve permanecer curto, operacional e estável. Para detalhes profundos de cada app, consulte `apps/web/CLAUDE.md` e `apps/api/CLAUDE.md`.
 
-## Contexto do template
+## Contexto do projeto
 
-- Organização: OPTSOLV.
-- Objetivo: template monorepo para desenvolvimento aumentado por IA.
-- Uso esperado: clonar o template, instalar dependências, adicionar documentos do projeto em `docs/projeto/`, gerar requisitos em Markdown e construir front-end, back-end ou ambos.
-- Stack base: TypeScript.
-- Front-end padrão: React + Vite + TypeScript.
-- Back-end padrão quando necessário: Node.js + TypeScript + Fastify.
-- Banco padrão quando necessário: PostgreSQL.
-- ORM/migrations quando houver banco: Drizzle.
-- Auth padrão quando necessário e suficiente: Better Auth.
-- Package manager: pnpm.
+- **Produto**: Optsolv PMS — sistema de gestão de projetos da Optsolv.
+- **Organização**: OPTSOLV.
+- **Stack base**: TypeScript strict.
+- **Frontend**: React 18 + Vite + TypeScript + Tailwind CSS 4 + shadcn/ui.
+- **Backend**: Node.js 20 + Fastify 5 + TypeScript.
+- **Banco de dados**: PostgreSQL via Drizzle ORM.
+- **Autenticação**: better-auth (Microsoft Entra ID + email/senha).
+- **Package manager**: pnpm (monorepo com workspaces).
 
-## Fluxo principal
+## Estrutura real do monorepo
 
 ```txt
-Template clonado
-→ pnpm install
-→ documentos/requisitos em docs/projeto/
-→ project-transcription gera project-requirements.md
-→ IA lê AGENTS.md + docs necessários
-→ IA consulta ui-kit para montar UI
-→ IA materializa frontend/backend conforme necessidade real
-→ validações com pnpm
+optsolv-pms/
+├── apps/
+│   ├── web/          # @optsolv/web  — Frontend React + Vite
+│   │   └── CLAUDE.md # Arquitetura detalhada do frontend
+│   └── api/          # @optsolv/api  — Backend Fastify
+│       └── CLAUDE.md # Arquitetura detalhada do backend
+├── packages/
+│   ├── shared/       # @optsolv/shared — Schemas Zod, types, utils financeiros
+│   ├── db/           # @optsolv/db    — Drizzle schema, migrations, seeds
+│   └── config/       # @optsolv/config — Configs Biome, TS compartilhadas
+├── docs/
+│   ├── projeto/      # Documentos canônicos do produto (somente leitura)
+│   ├── projeto-md/   # Requisitos consolidados gerados por project-transcription
+│   ├── frontend.md   # Arquitetura frontend em detalhes
+│   ├── backend.md    # Arquitetura backend em detalhes
+│   ├── development-workflow.md
+│   ├── security.md
+│   └── project-transcription.md
+├── AGENTS.md         # ← este arquivo (entrada para agentes de IA)
+├── CLAUDE.md         # Prompt mestre completo do produto (leitura prévia)
+├── GEMINI.md         # Ponte para Gemini CLI
+├── biome.json
+├── package.json
+├── pnpm-workspace.yaml
+└── README.md
 ```
 
 ## Mapa operacional
 
 ```txt
-o que construir        → docs/projeto-md/project-requirements.md
-como agir              → AGENTS.md
-como criar UI          → ui-kit + docs/frontend.md
-como criar API         → docs/backend.md
-como se proteger       → docs/security.md
-como validar/entregar  → docs/development-workflow.md
+o que construir          → docs/projeto-md/project-requirements.md
+como agir                → AGENTS.md (este arquivo)
+contexto completo        → CLAUDE.md (leitura prévia recomendada)
+como criar UI (web)      → apps/web/CLAUDE.md + docs/frontend.md
+como criar API (api)     → apps/api/CLAUDE.md + docs/backend.md
+como se proteger         → docs/security.md
+como validar/entregar    → docs/development-workflow.md
 ```
-
-## Responsabilidade dos arquivos e pastas
-
-- `README.md`: visão humana, instalação e uso rápido.
-- `AGENTS.md`: entrada principal para agentes de IA.
-- `CLAUDE.md` e `GEMINI.md`: pontes específicas para ferramentas, sem regra global duplicada.
-- `ui-kit/`: prateleira de componentes shadcn/ui, blocks, stories e exemplos de UI para consulta por IA.
-- `frontend/`: aplicação front-end real, criada/evoluída conforme `docs/frontend.md`.
-- `backend/`: API/back-end real, criada/evoluída conforme `docs/backend.md`.
-- `docs/frontend.md`: arquitetura front-end, componentização, uso do `ui-kit/` e testes de UI.
-- `docs/backend.md`: decisão de back-end, camadas, API, banco, auth, Drizzle e testes de back-end.
-- `docs/development-workflow.md`: branches, commits, PRs, scripts, hooks, validações e CI/CD.
-- `docs/security.md`: segurança, privacidade, prompt injection, secrets, permissões e áreas sensíveis.
-- `docs/project-transcription.md`: transcrição de documentos canônicos e geração de `project-requirements.md`.
-- `docs/projeto/`: documentos canônicos do projeto; somente leitura para agentes.
-- `docs/projeto-md/`: transcrições Markdown e requisitos consolidados derivados de `docs/projeto/`.
-
-## Fluxo inicial de uso do template
-
-Quando este template for clonado para iniciar um novo projeto do zero:
-
-1. O usuário deve instalar dependências com `pnpm install`.
-2. O usuário pode validar a base com `pnpm --filter @optsolv/ui-kit build-storybook`, `pnpm build` e `pnpm validate`.
-3. O usuário deve adicionar documentos, specs ou requisitos em `docs/projeto/`.
-4. Se houver documentos em `docs/projeto/`, execute `project-transcription` antes de implementar.
-5. Use `docs/projeto-md/project-requirements.md` como fonte principal do que construir.
-6. Para front-end, leia `docs/frontend.md` e consulte `ui-kit/`.
-7. Use `ui-kit/` como prateleira de referência: copie/adapte/materialize no `frontend/` apenas o necessário.
-8. Para back-end, leia `docs/backend.md`.
-9. Crie back-end, banco ou autenticação somente quando os requisitos justificarem.
-10. Para segurança, permissões, dados sensíveis, uploads, integrações ou auth, leia `docs/security.md`.
-11. Ao finalizar, informe arquivos alterados, validações executadas, validações não executadas e riscos restantes.
 
 ## Ordem de leitura por tipo de tarefa
 
-### Criar ou evoluir front-end
+### Trabalhar no frontend (`apps/web/`)
 
-1. `docs/projeto-md/project-requirements.md`, se existir.
-2. `docs/frontend.md`.
-3. `ui-kit/`, incluindo componentes shadcn/ui, blocks, stories e exemplos.
-4. Código existente em `frontend/`.
+1. Este `AGENTS.md`.
+2. `apps/web/CLAUDE.md` — arquitetura, padrões e convenções do frontend.
+3. `docs/projeto-md/project-requirements.md`, se a tarefa envolver escopo de produto.
+4. Código existente em `apps/web/src/` antes de criar padrão novo.
 
-### Criar ou evoluir back-end
+### Trabalhar no backend (`apps/api/`)
 
-1. `docs/projeto-md/project-requirements.md`, se existir.
-2. `docs/backend.md`.
-3. `docs/security.md`, se envolver auth, banco, dados sensíveis, uploads, integrações ou permissões.
-4. Código existente em `backend/`.
+1. Este `AGENTS.md`.
+2. `apps/api/CLAUDE.md` — arquitetura, padrões e convenções do backend.
+3. `docs/security.md`, se envolver auth, permissões, dados sensíveis ou integrações.
+4. Código existente em `apps/api/src/` antes de criar padrão novo.
+
+### Trabalhar em `packages/`
+
+- `packages/db/`: schema Drizzle — veja `apps/api/CLAUDE.md §DB`.
+- `packages/shared/`: schemas Zod e types compartilhados — veja `apps/api/CLAUDE.md §Shared`.
+- `packages/config/`: configs de ferramentas — alterar somente com justificativa clara.
 
 ### Processo de desenvolvimento
 
-Use `docs/development-workflow.md` para scripts, pnpm, branches, commits, PRs, hooks, validação local e CI/CD.
+Use `docs/development-workflow.md` para scripts pnpm, branches, commits, PRs, hooks e CI/CD.
 
 ### Transcrever documentos do projeto
 
-Quando o usuário pedir `executar project-transcription`, `transcrever docs/projeto`, `gerar project-requirements` ou marcar `@docs/project-transcription.md`:
+Quando o usuário pedir `executar project-transcription`:
 
 1. Leia `docs/project-transcription.md`.
 2. Use somente `docs/projeto/` como entrada canônica.
 3. Gere saídas apenas em `docs/projeto-md/`.
-4. Gere ou atualize `project-requirements.md` e `MANIFEST.md`.
-5. Nunca altere arquivos originais em `docs/projeto/`.
+4. Nunca altere arquivos em `docs/projeto/`.
 
-## Como usar `ui-kit/`
+## Scripts principais
 
-- Consulte `ui-kit/` antes de criar qualquer UI no `frontend/`.
-- Procure componente, variante, token, story, block ou composição equivalente.
-- O padrão inicial é copiar/adaptar e materializar no `frontend/` apenas o necessário para a feature.
-- Não importe diretamente de `ui-kit/` no `frontend/`, salvo decisão explícita.
-- Não altere `ui-kit/` sem autorização explícita.
+```bash
+# Raiz (orquestra todos os workspaces)
+pnpm dev          # inicia web + api em paralelo
+pnpm build        # build de todos os workspaces
+pnpm lint         # biome check em todos
+pnpm typecheck    # tsc --noEmit em todos
+pnpm test         # vitest em todos
+pnpm validate     # lint + typecheck + test
 
-## Se o usuário pedir para iniciar o projeto
-
-Se o usuário pedir para iniciar o projeto a partir dos requisitos, siga este fluxo:
-
-1. Leia este `AGENTS.md`.
-2. Se houver documentos em `docs/projeto/`, leia ou execute `docs/project-transcription.md`.
-3. Leia `docs/projeto-md/project-requirements.md`.
-4. Se `project-requirements.md` não existir, gere-o antes de implementar.
-5. Consulte apenas os documentos técnicos necessários:
-   - `docs/frontend.md` para front-end;
-   - `docs/backend.md` para back-end;
-   - `docs/security.md` para segurança;
-   - `docs/development-workflow.md` para validação e entrega.
-6. Consulte `ui-kit/` antes de criar qualquer UI.
-7. Implemente no `frontend/` e/ou `backend/` conforme o escopo real.
-8. Crie um plano antes de implementar se o escopo tiver múltiplos módulos, banco, auth, integrações ou permissões.
-9. Não altere arquivos protegidos sem autorização explícita.
-
-## Economia de contexto
-
-- Não carregue todos os documentos por padrão.
-- Consulte apenas os arquivos necessários para a tarefa.
-- Leia arquivos próximos da alteração antes de criar padrão novo.
-- Prefira caminhos, símbolos e trechos específicos em vez de contexto amplo.
-- Não repita no prompt regras já documentadas; referencie o arquivo correto.
-- Se o contexto recuperado conflitar com o código atual, sinalize o conflito antes de alterar.
+# Por workspace
+pnpm --filter @optsolv/web dev
+pnpm --filter @optsolv/api dev
+pnpm --filter @optsolv/db generate   # gera migrations Drizzle
+pnpm --filter @optsolv/db migrate    # executa migrations
+```
 
 ## Fluxo esperado da IA
 
-1. Entender a tarefa.
-2. Identificar a área afetada.
-3. Ler o mínimo de contexto necessário.
-4. Preservar padrões existentes.
-5. Fazer a menor mudança coerente.
+1. Entender a tarefa e identificar a área afetada (`web`, `api`, `packages/`).
+2. Ler o CLAUDE.md do workspace específico antes de qualquer implementação.
+3. Ler código existente próximo da alteração antes de criar padrão novo.
+4. Preservar padrões existentes — nenhuma segunda arquitetura.
+5. Fazer a menor mudança coerente com o padrão estabelecido.
 6. Criar ou atualizar testes quando houver comportamento verificável.
-7. Rodar validações aplicáveis.
-8. Informar alterações, validações e riscos restantes.
+7. Rodar validações aplicáveis (`pnpm typecheck`, `pnpm lint`, `pnpm test`).
+8. Informar arquivos alterados, validações e riscos restantes.
 
 ## Regras mínimas
 
 - Não inventar requisitos, APIs, variáveis de ambiente, contratos, integrações ou regras de negócio.
-- Não criar uma segunda arquitetura.
+- Não criar uma segunda arquitetura paralela.
 - Não alterar arquitetura para resolver problema local sem justificativa.
-- Não introduzir dependência nova sem necessidade real e justificativa.
+- Não introduzir dependência nova sem necessidade real e justificativa explícita.
 - Não instalar, atualizar ou remover dependência sem confirmação quando a mudança for relevante.
 - Não misturar feature pequena com refactor amplo.
 - Não reformatar arquivos inteiros sem necessidade.
 - Não remover testes, validações ou guardrails para fazer build passar.
 - Não gravar secrets, tokens, senhas, certificados, chaves privadas ou connection strings.
-- Não criar `.env` real no repositório.
+- Não criar `.env` real no repositório (use `.env.example`).
 - Não logar dados sensíveis.
 - Nunca alterar, remover, renomear, mover ou sobrescrever arquivos em `docs/projeto/`.
 - Nunca salvar transcrições dentro de `docs/projeto/`; use `docs/projeto-md/`.
@@ -170,59 +142,37 @@ Se o usuário pedir para iniciar o projeto a partir dos requisitos, siga este fl
 
 ## Permissões
 
-Permitido sem perguntar:
+**Permitido sem perguntar:**
 
-- Ler arquivos do repositório.
+- Ler qualquer arquivo do repositório.
 - Editar arquivos relacionados à tarefa que não estejam protegidos.
 - Criar ou atualizar testes relacionados.
 - Rodar lint, typecheck, testes e build locais.
 - Criar ou atualizar arquivos em `docs/projeto-md/` durante `project-transcription`.
 
-Perguntar antes:
+**Perguntar antes:**
 
 - Remover arquivos ou diretórios.
-- Executar comando destrutivo.
+- Executar comando destrutivo ou irreversível.
 - Alterar schema de banco, migrations ou scripts de dados.
 - Alterar autenticação, autorização, permissões ou sessão.
 - Alterar CI/CD, Docker, cloud, deploy ou infraestrutura.
-- Processar documentos sensíveis usando ferramentas externas, OCR remoto ou serviços fora do ambiente aprovado.
 - Alterar stack, package manager ou adicionar dependência relevante.
 - Fazer `git push`, merge, reset, rebase ou troca de branch.
 - Alterar qualquer arquivo ou pasta protegida.
 
 ## Arquivos e pastas protegidos
 
-Agentes de IA não devem alterar, mover, renomear, remover, reformatar ou sobrescrever sem autorização explícita:
+Agentes de IA **não devem alterar** sem autorização explícita:
 
-- `README.md`
-- `AGENTS.md`
-- `CLAUDE.md`
-- `GEMINI.md`
-- `docs/*.md`
-- `docs/projeto/`
-- `ui-kit/`
+- `README.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`
+- `docs/*.md` (documentos técnicos de regra)
+- `docs/projeto/` (documentos canônicos do produto)
+- `biome.json`, `pnpm-workspace.yaml`, `package.json` raiz
 - `skills-lock.json`
-- qualquer arquivo ou pasta que comece com `.`, como `.agents/`, `.claude/`, `.nvmrc`, `.gitignore`, `.editorconfig`, `.storybook/`, `.husky/`, `.vscode/`
+- Qualquer arquivo ou pasta que comece com `.` (`.agents/`, `.claude/`, `.husky/`, `.nvmrc`, `.gitignore`, `.editorconfig`, `.lintstagedrc.json`, `.commitlintrc.json`)
 
-Permitido:
-
-- ler esses arquivos para entender contexto;
-- consultar `docs/` para seguir regras;
-- consultar `ui-kit/` para reutilizar componentes shadcn/ui, blocks, stories e padrões;
-- consultar arquivos que começam com `.` quando necessário para ambiente/configuração.
-
-Exceção permitida:
-
-- ao executar `project-transcription`, o agente pode criar ou atualizar arquivos em `docs/projeto-md/`.
-
-Proibido sem autorização explícita:
-
-- editar documentos de regra em `docs/*.md`;
-- alterar arquivos canônicos em `docs/projeto/`;
-- alterar `ui-kit/`;
-- alterar arquivos de configuração iniciados com `.`;
-- alterar `skills-lock.json`;
-- gerar arquivos novos dentro de pastas protegidas fora da exceção `docs/projeto-md/`.
+**Exceção permitida:** durante `project-transcription`, o agente pode criar ou atualizar arquivos em `docs/projeto-md/`.
 
 ## Resposta final esperada
 
