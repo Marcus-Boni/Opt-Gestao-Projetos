@@ -1,9 +1,9 @@
-import { jsonb, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { jsonb, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 
 export const auditLogs = pgTable('audit_logs', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').references(() => user.id),
+  userId: text('user_id').references(() => user.id),
   action: varchar('action', { length: 100 }).notNull(),
   module: varchar('module', { length: 50 }).notNull(),
   details: jsonb('details'),

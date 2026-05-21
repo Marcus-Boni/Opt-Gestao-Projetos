@@ -7,7 +7,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { cn } from '@/shared/lib/utils';
 import type { ProjectDetailTabDto } from '../../api/projectsApi';
 
 const BRL = new Intl.NumberFormat('pt-BR', {
@@ -16,6 +15,12 @@ const BRL = new Intl.NumberFormat('pt-BR', {
   notation: 'compact',
   maximumFractionDigits: 1,
 });
+
+function formatDateBr(d: string | null) {
+  if (!d) return '—';
+  const [year, month, day] = d.split('-');
+  return `${day}/${month}/${year}`;
+}
 
 type Props = { detail: ProjectDetailTabDto };
 
@@ -26,44 +31,52 @@ export function OverviewTab({ detail }: Props) {
     Margem: m.margin,
   }));
 
-  const progressDiff = detail.progressActual - detail.progressPlanned;
-
   return (
     <div className="flex flex-col gap-6">
-      {/* Timeline */}
       <div className="rounded-lg border bg-card p-4">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Linha do tempo
-        </p>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">{detail.startDate ?? '—'}</span>
-          <div className="relative flex-1">
-            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+        <p className="mb-4 text-sm font-semibold text-foreground">Linha do tempo</p>
+
+        <div className="mb-6 grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <p className="text-xs text-muted-foreground">Início</p>
+            <p className="font-medium text-foreground">{formatDateBr(detail.startDate)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Término previsto</p>
+            <p className="font-medium text-foreground">{formatDateBr(detail.endDate)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Tipo</p>
+            <p className="font-medium text-foreground">{detail.scope ?? '—'}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div>
+            <div className="mb-1.5 flex items-center justify-between text-xs font-medium">
+              <span className="text-muted-foreground">Realizado</span>
+              <span className="text-foreground">{detail.progressActual.toFixed(0)}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-primary"
+                className="h-full rounded-full bg-primary transition-all duration-500"
                 style={{ width: `${Math.min(detail.progressActual, 100)}%` }}
               />
             </div>
           </div>
-          <span className="text-muted-foreground">{detail.endDate ?? '—'}</span>
-        </div>
-        <div className="mt-2 flex gap-6 text-xs text-muted-foreground">
-          <span>
-            Planejado:{' '}
-            <strong className="text-foreground">{detail.progressPlanned.toFixed(0)}%</strong>
-          </span>
-          <span>
-            Realizado:{' '}
-            <strong className={cn(progressDiff >= 0 ? 'text-health-ok' : 'text-health-alert')}>
-              {detail.progressActual.toFixed(0)}%
-            </strong>
-          </span>
-          {progressDiff !== 0 && (
-            <span className={progressDiff > 0 ? 'text-health-ok' : 'text-health-alert'}>
-              {progressDiff > 0 ? '+' : ''}
-              {progressDiff.toFixed(0)}%
-            </span>
-          )}
+
+          <div>
+            <div className="mb-1.5 flex items-center justify-between text-xs font-medium">
+              <span className="text-muted-foreground">Planejado</span>
+              <span className="text-foreground">{detail.progressPlanned.toFixed(0)}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${Math.min(detail.progressPlanned, 100)}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

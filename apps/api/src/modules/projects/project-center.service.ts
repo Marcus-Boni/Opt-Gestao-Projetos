@@ -1,5 +1,10 @@
 import { calculateFinanceSummary } from '@optsolv/shared';
-import { collaboratorFixtures, financeMonthFixtures, projectFixtures } from './project.fixtures';
+import {
+  backlogFixtures,
+  collaboratorFixtures,
+  financeMonthFixtures,
+  projectFixtures,
+} from './project.fixtures';
 
 const MONTH_LABELS = [
   'Jan',
@@ -58,18 +63,19 @@ export class ProjectCenterService {
         status: mapStatus(project.status),
         startDate: project.startDate,
         endDate: project.endDate,
-        managerName: 'Gestora PMS',
+        managerName: 'Maria Olivia',
         progressPlanned: 65,
         progressActual: budgetUsedPercent > 70 ? 50 : 70,
         budgetTotal: totals.budget,
         budgetUsed: totals.harvestCost,
         budgetUsedPercent,
         durationMonths: durationMonths(project.startDate, project.endDate),
+        scope: project.scope,
       };
     });
 
     return {
-      groups: [{ managerName: 'Gestora PMS', projects: projectData }],
+      groups: [{ managerName: 'Maria Olivia', projects: projectData }],
       totalCount: projects.length,
     };
   }
@@ -80,6 +86,7 @@ export class ProjectCenterService {
 
     const months = financeMonthFixtures.filter((m) => m.projectId === projectId);
     const team = collaboratorFixtures.filter((c) => c.projectId === projectId);
+    const backlog = backlogFixtures.filter((b) => b.projectId === projectId);
 
     const totals = months.reduce(
       (acc, m) => ({
@@ -118,7 +125,7 @@ export class ProjectCenterService {
       id: project.id,
       name: project.name,
       code: project.code,
-      type: 'desenvolvimento',
+      scope: project.scope,
       clientName: project.clientName,
       status: mapStatus(project.status),
       startDate: project.startDate,
@@ -138,6 +145,15 @@ export class ProjectCenterService {
         hoursActual: c.hours,
       })),
       monthlyFinance,
+      backlog: backlog.map((b) => ({
+        id: b.id,
+        type: b.type,
+        title: b.title,
+        progress: b.progress,
+        estimatedHours: b.estimatedHours,
+        actualHours: b.actualHours,
+        status: b.status,
+      })),
     };
   }
 }

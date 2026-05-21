@@ -17,6 +17,7 @@ export type ProjectListItemDto = {
   budgetUsed: number;
   budgetUsedPercent: number;
   durationMonths: number;
+  scope: string;
 };
 
 export type ProjectGroupedByManager = {
@@ -33,7 +34,7 @@ export type ProjectDetailTabDto = {
   id: string;
   name: string;
   code: string | null;
-  type: string | null;
+  scope: string | null;
   clientName: string;
   status: ProjectStatus;
   startDate: string | null;
@@ -52,6 +53,15 @@ export type ProjectDetailTabDto = {
     revenue: number;
     cost: number;
     margin: number;
+  }>;
+  backlog: Array<{
+    id: string;
+    type: 'Epic' | 'Feature' | 'PBI';
+    title: string;
+    progress: number;
+    estimatedHours: number;
+    actualHours: number;
+    status: 'Em andamento' | 'Concluído' | 'Atrasado';
   }>;
 };
 

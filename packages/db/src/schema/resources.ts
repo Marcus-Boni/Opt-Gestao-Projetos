@@ -3,7 +3,7 @@ import { user } from './auth';
 
 export const resources = pgTable('resources', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').references(() => user.id),
+  userId: text('user_id').references(() => user.id),
   name: varchar('name', { length: 200 }).notNull(),
   role: varchar('role', { length: 100 }).notNull(),
   email: varchar('email', { length: 200 }),

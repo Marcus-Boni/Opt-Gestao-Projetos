@@ -1,10 +1,13 @@
-import { useParams } from '@tanstack/react-router';
-import { DollarSign, Gauge, TrendingUp, Users } from 'lucide-react';
+import { Link, useParams } from '@tanstack/react-router';
+import { ArrowLeft, Clock, DollarSign, FileText, Gauge, TrendingUp, Users } from 'lucide-react';
 import {
   CostsTab,
   OverviewTab,
   ProjectStatusBadge,
+  ReportTab,
   ResourcesTab,
+  ScopeTab,
+  TasksTab,
   useProjectDetailFull,
 } from '@/features/projects';
 import { KpiCard } from '@/shared/components/KpiCard';
@@ -48,12 +51,39 @@ export function ProjectDetailPage() {
       <PageHeader
         eyebrow={detail.clientName}
         title={detail.name}
-        {...(detail.code ? { description: detail.code } : {})}
+        description={`${detail.scope ?? 'Sem escopo'} • Gestor(a): ${detail.managerName}`}
+        backButton={
+          <Link
+            to="/app/projetos"
+            className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors hover:bg-muted"
+          >
+            <ArrowLeft className="size-4" />
+          </Link>
+        }
         actions={<ProjectStatusBadge status={detail.status} size="md" />}
       />
       <main className="flex flex-col gap-4 p-5">
         {/* KPI cards */}
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <KpiCard
+            title="Cronograma"
+            value={
+              detail.scheduleDeviationPercent != null
+                ? `${detail.scheduleDeviationPercent > 0 ? '+' : ''}${detail.scheduleDeviationPercent}%`
+                : '—'
+            }
+            description="Desvio vs Planejado"
+            icon={Clock}
+            tone={
+              detail.scheduleDeviationPercent === null
+                ? 'default'
+                : detail.scheduleDeviationPercent > 5
+                  ? 'negative'
+                  : detail.scheduleDeviationPercent < 0
+                    ? 'positive'
+                    : 'warning'
+            }
+          />
           <KpiCard
             title="Progresso"
             value={`${detail.progressActual.toFixed(0)}%`}
@@ -94,17 +124,32 @@ export function ProjectDetailPage() {
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="escopo">Escopo (Azure)</TabsTrigger>
+            <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
             <TabsTrigger value="recursos">Recursos</TabsTrigger>
             <TabsTrigger value="custos">Custos</TabsTrigger>
+            <TabsTrigger value="relatorio" className="gap-1.5">
+              <FileText className="size-3.5" aria-hidden="true" />
+              Relatório
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="mt-4">
             <OverviewTab detail={detail} />
+          </TabsContent>
+          <TabsContent value="escopo" className="mt-4">
+            <ScopeTab detail={detail} />
+          </TabsContent>
+          <TabsContent value="tarefas" className="mt-4">
+            <TasksTab detail={detail} />
           </TabsContent>
           <TabsContent value="recursos" className="mt-4">
             <ResourcesTab detail={detail} />
           </TabsContent>
           <TabsContent value="custos" className="mt-4">
             <CostsTab detail={detail} />
+          </TabsContent>
+          <TabsContent value="relatorio" className="mt-4">
+            <ReportTab detail={detail} />
           </TabsContent>
         </Tabs>
       </main>

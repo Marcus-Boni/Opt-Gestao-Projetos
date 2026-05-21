@@ -29,9 +29,17 @@ type Props = {
     status?: TaskStatus;
   }) => void;
   isLoading?: boolean | undefined;
+  defaultProjectId?: string;
 };
 
-export function TaskDialog({ open, onOpenChange, task, onSave, isLoading }: Props) {
+export function TaskDialog({
+  open,
+  onOpenChange,
+  task,
+  onSave,
+  isLoading,
+  defaultProjectId,
+}: Props) {
   const { data: projectCenter } = useProjectCenter();
   const [title, setTitle] = useState('');
   const [projectId, setProjectId] = useState('');
@@ -49,12 +57,12 @@ export function TaskDialog({ open, onOpenChange, task, onSave, isLoading }: Prop
         setStatus(task.status);
       } else {
         setTitle('');
-        setProjectId('');
+        setProjectId(defaultProjectId || '');
         setPriority('media');
         setStatus('todo');
       }
     }
-  }, [open, task]);
+  }, [open, task, defaultProjectId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

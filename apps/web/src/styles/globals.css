@@ -130,3 +130,82 @@
     font-family: var(--font-sans);
   }
 }
+
+/* ============================================================
+   Print styles — Aba Relatório do Projeto
+   Estratégia: window.print() + @media print
+   Apenas o #report-print-area é renderizado na impressão.
+   ============================================================ */
+@media print {
+  /* Ocultar tudo que não é o relatório */
+  body > * {
+    display: none !important;
+  }
+
+  /* Revelar e posicionar a área de impressão */
+  #report-print-area {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: fixed;
+    inset: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    background: white !important;
+    color: #111827 !important;
+  }
+
+  /* Ocultar botões de edição, selects e toolbar na impressão */
+  #report-print-area button,
+  #report-print-area [role="combobox"],
+  #report-print-area [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+
+  /* Manter texto legível */
+  #report-print-area p,
+  #report-print-area h2,
+  #report-print-area h3,
+  #report-print-area span,
+  #report-print-area li {
+    color: #111827 !important;
+  }
+
+  /* Muted text levemente mais claro */
+  #report-print-area .text-muted-foreground {
+    color: #6b7280 !important;
+  }
+
+  /* Cores de status financeiro — especificidade via ID elimina need de !important */
+  #report-print-area #report-print-area .text-financial-positive,
+  #report-print-area .text-financial-positive {
+    color: #16a34a;
+  }
+  #report-print-area .text-financial-negative {
+    color: #dc2626;
+  }
+  #report-print-area .text-financial-warning {
+    color: #d97706;
+  }
+
+  /* Bordas e cards visíveis */
+  #report-print-area .rounded-lg,
+  #report-print-area .border {
+    border: 1px solid #e5e7eb;
+    background: white;
+    page-break-inside: avoid;
+  }
+
+  /* Separador */
+  #report-print-area [data-orientation="horizontal"] {
+    border-top: 1px solid #e5e7eb;
+    margin: 0.5rem 0;
+  }
+
+  /* Configuração da página A4 */
+  @page {
+    size: A4;
+    margin: 20mm 15mm;
+  }
+}

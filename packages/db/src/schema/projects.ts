@@ -1,4 +1,4 @@
-import { boolean, numeric, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, numeric, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { clients } from './clients';
 
@@ -17,7 +17,7 @@ export const projects = pgTable('projects', {
     .default('no_prazo'),
   startDate: timestamp('start_date'),
   endDate: timestamp('end_date'),
-  managerId: uuid('manager_id').references(() => user.id),
+  managerId: text('manager_id').references(() => user.id),
   budget: numeric('budget', { precision: 14, scale: 2 }),
   contractPrice: numeric('contract_price', { precision: 14, scale: 2 }),
   progressPlanned: numeric('progress_planned', { precision: 5, scale: 2 }).default('0'),

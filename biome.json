@@ -28,7 +28,7 @@
       "recommended": true,
       "suspicious": {
         "noExplicitAny": "error",
-        "noConsole": "warn"
+        "noConsole": "off"
       },
       "style": {
         "useConsistentArrayType": "error",

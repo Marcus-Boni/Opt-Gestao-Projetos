@@ -159,6 +159,7 @@ export async function tasksRoutes(app: FastifyInstance) {
     if (taskIndex === -1) return reply.status(404).send({ error: 'Task not found' });
 
     const task = taskStore[taskIndex];
+    if (!task) return reply.status(404).send({ error: 'Task not found' });
 
     if (body.projectId && body.projectId !== task.projectId) {
       const project = projectFixtures.find((p) => p.id === body.projectId);

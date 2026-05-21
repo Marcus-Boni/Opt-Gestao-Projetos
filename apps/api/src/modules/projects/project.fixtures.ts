@@ -10,6 +10,7 @@ export type ProjectFixture = {
   startDate: string | null;
   endDate: string | null;
   status: ProjectStatus;
+  scope: string;
 };
 
 export type FinanceMonthFixture = {
@@ -65,6 +66,7 @@ export const projectFixtures: Array<ProjectFixture & { id: ProjectId }> = [
     startDate: '2025-01-06',
     endDate: '2025-12-19',
     status: 'active',
+    scope: 'Seguro de decisão',
   },
   {
     id: 'prj-acotel-opt',
@@ -76,6 +78,7 @@ export const projectFixtures: Array<ProjectFixture & { id: ProjectId }> = [
     startDate: '2025-02-03',
     endDate: '2025-11-28',
     status: 'active',
+    scope: 'Desenvolvimento',
   },
   {
     id: 'prj-arcelor-governanca',
@@ -87,6 +90,7 @@ export const projectFixtures: Array<ProjectFixture & { id: ProjectId }> = [
     startDate: '2025-01-20',
     endDate: '2025-10-31',
     status: 'paused',
+    scope: 'Operação assistida',
   },
   {
     id: 'prj-wedo-comunify',
@@ -98,6 +102,7 @@ export const projectFixtures: Array<ProjectFixture & { id: ProjectId }> = [
     startDate: '2025-03-10',
     endDate: '2025-12-12',
     status: 'active',
+    scope: 'Desenvolvimento',
   },
 ];
 
@@ -243,3 +248,77 @@ export const timeEntryFixtures: TimeEntryFixture[] = [
     billable: false,
   },
 ];
+
+export type BacklogItemFixture = {
+  id: string;
+  projectId: string;
+  type: 'Epic' | 'Feature' | 'PBI';
+  title: string;
+  progress: number;
+  estimatedHours: number;
+  actualHours: number;
+  status: 'Em andamento' | 'Concluído' | 'Atrasado';
+};
+
+export const backlogFixtures: BacklogItemFixture[] = projectFixtures.flatMap((project) => [
+  {
+    id: `bkl-1-${project.id}`,
+    projectId: project.id,
+    type: 'Epic',
+    title: 'Atendimento Omnichannel',
+    progress: 70,
+    estimatedHours: 480,
+    actualHours: 360,
+    status: 'Em andamento',
+  },
+  {
+    id: `bkl-2-${project.id}`,
+    projectId: project.id,
+    type: 'Feature',
+    title: 'Chat em tempo real',
+    progress: 90,
+    estimatedHours: 120,
+    actualHours: 110,
+    status: 'Em andamento',
+  },
+  {
+    id: `bkl-3-${project.id}`,
+    projectId: project.id,
+    type: 'Feature',
+    title: 'Integração WhatsApp Business',
+    progress: 60,
+    estimatedHours: 80,
+    actualHours: 70,
+    status: 'Em andamento',
+  },
+  {
+    id: `bkl-4-${project.id}`,
+    projectId: project.id,
+    type: 'PBI',
+    title: 'Implementar histórico de conversas',
+    progress: 100,
+    estimatedHours: 24,
+    actualHours: 22,
+    status: 'Concluído',
+  },
+  {
+    id: `bkl-5-${project.id}`,
+    projectId: project.id,
+    type: 'PBI',
+    title: 'Webhooks de status',
+    progress: 40,
+    estimatedHours: 16,
+    actualHours: 22,
+    status: 'Atrasado',
+  },
+  {
+    id: `bkl-6-${project.id}`,
+    projectId: project.id,
+    type: 'PBI',
+    title: 'Painel do atendente',
+    progress: 75,
+    estimatedHours: 32,
+    actualHours: 28,
+    status: 'Em andamento',
+  },
+]);

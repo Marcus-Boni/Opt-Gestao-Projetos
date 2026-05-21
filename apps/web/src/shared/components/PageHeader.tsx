@@ -5,19 +5,23 @@ type PageHeaderProps = {
   title: string;
   description?: string;
   actions?: ReactNode;
+  backButton?: ReactNode;
 };
 
-export function PageHeader({ eyebrow, title, description, actions }: PageHeaderProps) {
+export function PageHeader({ eyebrow, title, description, actions, backButton }: PageHeaderProps) {
   return (
     <header className="flex flex-col gap-4 border-b bg-background px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-      <div className="min-w-0">
-        {eyebrow ? (
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">{eyebrow}</p>
-        ) : null}
-        <h1 className="truncate font-display text-2xl font-bold tracking-tight">{title}</h1>
-        {description ? (
-          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{description}</p>
-        ) : null}
+      <div className="flex items-start gap-4 min-w-0">
+        {backButton && <div className="mt-1 flex-shrink-0">{backButton}</div>}
+        <div className="min-w-0">
+          {eyebrow ? (
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">{eyebrow}</p>
+          ) : null}
+          <h1 className="truncate font-display text-2xl font-bold tracking-tight">{title}</h1>
+          {description ? (
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{description}</p>
+          ) : null}
+        </div>
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </header>

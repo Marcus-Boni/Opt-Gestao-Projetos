@@ -11,7 +11,7 @@ export const documents = pgTable('documents', {
   category: varchar('category', { length: 50 }).$type<'contrato' | 'ata' | 'tecnico' | 'outro'>(),
   url: text('url').notNull(),
   version: integer('version').default(1).notNull(),
-  uploadedBy: uuid('uploaded_by').references(() => user.id),
+  uploadedBy: text('uploaded_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

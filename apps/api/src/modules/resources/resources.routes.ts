@@ -1,51 +1,67 @@
 import type { FastifyInstance } from 'fastify';
 import { requireSession } from '../../plugins/auth';
-import { collaboratorFixtures } from '../projects/project.fixtures';
+import {
+  type CreateResourceDto,
+  type GetResourcesFilter,
+  ResourcesService,
+  type UpdateResourceDto,
+} from './resources.service';
 
 export async function resourcesRoutes(app: FastifyInstance) {
-  app.get('/api/resources', { preHandler: requireSession }, async (_req, reply) => {
-    const uniqueResources = Array.from(
-      new Map(collaboratorFixtures.map((c) => [c.name, c])).values(),
-    );
+  const service = new ResourcesService();
 
-    const resources = uniqueResources.map((c, index) => {
-      const totalHours = collaboratorFixtures
-        .filter((x) => x.name === c.name)
-        .reduce((s, x) => s + x.hours, 0);
-      const capacity = 8 * 22;
-      const utilizationPercent = Math.round((totalHours / capacity) * 100);
-      const status =
-        utilizationPercent > 100
-          ? 'sobrecarga'
-          : utilizationPercent > 40
-            ? 'alocado'
-            : 'disponivel';
+  app.get<{ Querystring: GetResourcesFilter }>(
+    '/api/resources',
+    { preHandler: requireSession },
+    async (req, reply) => {
+      const filters = req.query;
+      if (typeof filters.active === 'string') {
+        filters.active = filters.active === 'true';
+      }
+      const result = await service.listResources(filters);
+      return reply.send(result);
+    },
+  );
 
-      const skillSets: string[][] = [
-        ['React', 'TypeScript', 'Node.js', 'Azure'],
-        ['Java', 'Spring Boot', 'PostgreSQL', 'Docker'],
-        ['React', 'Vue.js', 'CSS', 'Figma'],
-        ['Python', 'Power BI', 'SQL', 'ETL'],
-        ['DevOps', 'Azure', 'Terraform', 'CI/CD'],
-      ];
+  app.post<{ Body: CreateResourceDto }>(
+    '/api/resources',
+    { preHandler: requireSession },
+    async (req, reply) => {
+      const data = req.body;
+      const newResource = await service.createResource(data);
+      return reply.status(201).send(newResource);
+    },
+  );
 
-      return {
-        id: `res-${index}`,
-        name: c.name,
-        role: c.role,
-        email: `${c.name.toLowerCase().replace(/\s/g, '.')}@optsolv.com.br`,
-        skills: skillSets[index % skillSets.length] ?? [],
-        utilizationPercent,
-        status: status as 'disponivel' | 'alocado' | 'sobrecarga',
-        costPerHour: 120 + index * 15,
-      };
-    });
+  app.put<{ Params: { id: string }; Body: UpdateResourceDto }>(
+    '/api/resources/:id',
+    { preHandler: requireSession },
+    async (req, reply) => {
+      const { id } = req.params;
+      const data = req.body;
+      const updated = await service.updateResource(id, data);
+      return reply.send(updated);
+    },
+  );
 
-    const avgUtilization =
-      resources.reduce((s, r) => s + r.utilizationPercent, 0) / resources.length;
-    const availableCount = resources.filter((r) => r.status === 'disponivel').length;
-    const overloadedCount = resources.filter((r) => r.status === 'sobrecarga').length;
+  app.post<{ Params: { id: string }; Body: { resourceId: string } }>(
+    '/api/projects/:id/resources',
+    { preHandler: requireSession },
+    async (req, reply) => {
+      const { id } = req.params;
+      const { resourceId } = req.body;
+      await service.linkResourceToProject(id, resourceId);
+      return reply.status(204).send();
+    },
+  );
 
-    return reply.send({ resources, avgUtilization, availableCount, overloadedCount });
-  });
+  app.delete<{ Params: { id: string; resourceId: string } }>(
+    '/api/projects/:id/resources/:resourceId',
+    { preHandler: requireSession },
+    async (req, reply) => {
+      const { id, resourceId } = req.params;
+      await service.unlinkResourceFromProject(id, resourceId);
+      return reply.status(204).send();
+    },
+  );
 }
