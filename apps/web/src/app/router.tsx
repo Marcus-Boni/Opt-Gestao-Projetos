@@ -51,6 +51,11 @@ const TasksPage = lazy(() =>
 const ProjectsPage = lazy(() =>
   import('@/pages/projects/ProjectsPage').then((m) => ({ default: m.ProjectsPage })),
 );
+const ProjectCreateEditPage = lazy(() =>
+  import('@/pages/projects/ProjectCreateEditPage').then((m) => ({
+    default: m.ProjectCreateEditPage,
+  })),
+);
 const ProjectDetailPage = lazy(() =>
   import('@/pages/project-detail/ProjectDetailPage').then((m) => ({
     default: m.ProjectDetailPage,
@@ -127,6 +132,18 @@ const projectsRoute = createRoute({
   component: withSuspense(ProjectsPage),
 });
 
+const projectCreateRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/projetos/novo',
+  component: withSuspense(ProjectCreateEditPage),
+});
+
+const projectEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/projetos/$projectId/editar',
+  component: withSuspense(ProjectCreateEditPage),
+});
+
 const projectDetailRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/projetos/$projectId',
@@ -166,6 +183,8 @@ const routeTree = rootRoute.addChildren([
     dashboardRoute,
     tasksRoute,
     projectsRoute,
+    projectCreateRoute,
+    projectEditRoute,
     projectDetailRoute,
     financeiroRoute,
     reportsRoute,
