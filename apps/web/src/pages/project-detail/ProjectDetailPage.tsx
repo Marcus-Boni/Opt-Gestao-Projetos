@@ -13,6 +13,7 @@ import {
 import { KpiCard } from '@/shared/components/KpiCard';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { ErrorState, ProjectDetailSkeleton } from '@/shared/components/StateViews';
+import { Button } from '@/shared/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 
 const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -60,7 +61,16 @@ export function ProjectDetailPage() {
             <ArrowLeft className="size-4" />
           </Link>
         }
-        actions={<ProjectStatusBadge status={detail.status} size="md" />}
+        actions={
+          <div className="flex items-center gap-2">
+            <ProjectStatusBadge status={detail.status} size="md" />
+            <Button variant="outline" asChild>
+              <Link to="/app/projetos/$projectId/editar" params={{ projectId: detail.id }}>
+                Editar
+              </Link>
+            </Button>
+          </div>
+        }
       />
       <main className="flex flex-col gap-4 p-5">
         {/* KPI cards */}
