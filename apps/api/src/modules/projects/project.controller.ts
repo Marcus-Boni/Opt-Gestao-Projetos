@@ -12,7 +12,7 @@ const projectParamsSchema = z.object({
 });
 
 export class ProjectController {
-  private readonly service = new ProjectService();
+  readonly service = new ProjectService();
 
   getMatrix = async (request: FastifyRequest, reply: FastifyReply) => {
     const query = matrixQuerySchema.parse(request.query);

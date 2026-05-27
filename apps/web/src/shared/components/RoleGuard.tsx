@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { type ReactNode, useEffect } from 'react';
-import { hasPermission, useRoleStore } from '@/shared/stores/roleStore';
+import { useActiveRole, useRoleStore } from '@/shared/stores/roleStore';
 
 type RoleGuardProps = {
   module: string;
@@ -9,9 +9,10 @@ type RoleGuardProps = {
 };
 
 export function RoleGuard({ module, children, fallback }: RoleGuardProps) {
-  const role = useRoleStore((s) => s.role);
+  const role = useActiveRole();
+  const permissions = useRoleStore((s) => s.permissions);
+  const allowed = permissions[module] ? permissions[module].includes(role) : false;
   const navigate = useNavigate();
-  const allowed = hasPermission(role, module);
 
   useEffect(() => {
     if (!allowed && !fallback) {
@@ -25,15 +26,18 @@ export function RoleGuard({ module, children, fallback }: RoleGuardProps) {
 
 // Hook for programmatic checks
 export function useHasPermission(module: string): boolean {
-  const role = useRoleStore((s) => s.role);
-  return hasPermission(role, module);
+  const role = useActiveRole();
+  const permissions = useRoleStore((s) => s.permissions);
+  return permissions[module] ? permissions[module].includes(role) : false;
 }
 
 // Filter nav items based on role
 export function useAllowedNavItems<T extends { to: string }>(items: readonly T[]): T[] {
-  const role = useRoleStore((s) => s.role);
+  const role = useActiveRole();
+  const permissions = useRoleStore((s) => s.permissions);
   return items.filter((item) => {
     const segment = item.to.split('/').pop() ?? '';
-    return hasPermission(role, segment);
+    const allowed = permissions[segment];
+    return allowed ? allowed.includes(role) : false;
   });
 }

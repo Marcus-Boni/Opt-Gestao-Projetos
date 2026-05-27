@@ -1,3 +1,4 @@
+import type { projects } from '@optsolv/db';
 import {
   calculateFinanceSummary,
   type FinanceInput,
@@ -38,6 +39,35 @@ export class ProjectService {
 
   constructor(options: ProjectServiceOptions = {}) {
     this.repository = options.repository ?? new ProjectRepository();
+  }
+
+  async listProjectsAdmin(filters: {
+    search?: string | undefined;
+    clientId?: string | undefined;
+    status?: string | undefined;
+    active?: boolean | undefined;
+  }) {
+    return this.repository.findManyDb(filters);
+  }
+
+  async createProject(
+    data: Omit<typeof projects.$inferInsert, 'id' | 'active'> & {
+      status?: typeof projects.$inferInsert.status;
+    },
+  ) {
+    return this.repository.createDb({
+      ...data,
+      active: true,
+      status: data.status ?? 'no_prazo',
+    });
+  }
+
+  async updateProject(id: string, data: Partial<typeof projects.$inferInsert>) {
+    const existing = await this.repository.findByIdDb(id);
+    if (!existing) {
+      throw new Error('Projeto não encontrado');
+    }
+    return this.repository.updateDb(id, data);
   }
 
   async getMatrix(filters: ProjectFilters): Promise<ProjectsMatrixResponseDto> {

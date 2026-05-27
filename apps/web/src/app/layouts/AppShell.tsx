@@ -9,6 +9,7 @@ import {
   Menu,
   PanelLeft,
   Settings,
+  ShieldAlert,
   Users,
   X,
 } from 'lucide-react';
@@ -18,7 +19,9 @@ import { ThemeToggle } from '@/shared/components/ThemeToggle';
 import { UserMenu } from '@/shared/components/UserMenu';
 import { Button } from '@/shared/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/tooltip';
+import { authClient } from '@/shared/lib/auth-client';
 import { cn } from '@/shared/lib/utils';
+import { type UserRole, useRoleStore } from '@/shared/stores/roleStore';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 const SIDEBAR_W = 256;
@@ -277,8 +280,43 @@ function TopBar({
   );
 }
 
+function SimulationBanner({ role, onClear }: { role: UserRole; onClear: () => void }) {
+  const roleLabel =
+    role === 'gerente' ? 'Gerente' : role === 'usuario' ? 'Usuário' : 'Administrador';
+  return (
+    <div className="w-full bg-amber-500/15 border-b border-amber-500/20 text-amber-800 dark:text-amber-300 px-4 py-2 text-xs flex justify-between items-center font-medium shadow-sm shrink-0 animate-in slide-in-from-top duration-200">
+      <div className="flex items-center gap-2">
+        <ShieldAlert className="size-4 shrink-0 text-amber-600 dark:text-amber-400 animate-pulse" />
+        <span>
+          Você está visualizando o sistema PMS com as permissões de <strong>{roleLabel}</strong>.
+        </span>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onClear}
+        className="h-6 px-2 text-[10px] border-amber-500/35 hover:bg-amber-500/10 text-amber-800 dark:text-amber-300 font-semibold"
+      >
+        Voltar ao Perfil Real
+      </Button>
+    </div>
+  );
+}
+
 export function AppShell() {
   const { collapsed, mobileOpen, toggle, setMobileOpen } = useSidebarStore();
+  const session = authClient.useSession();
+  const userId = session.data?.user?.id;
+
+  const simulatedRole = useRoleStore((s) => s.simulatedRole);
+  const setSimulatedRole = useRoleStore((s) => s.setSimulatedRole);
+  const userRoles = useRoleStore((s) => s.userRoles);
+
+  const realRole = userId
+    ? userRoles[userId] || (Object.keys(userRoles).length === 0 ? 'admin' : 'usuario')
+    : 'usuario';
+
+  const isSimulating = realRole === 'admin' && simulatedRole !== null;
 
   return (
     <div className="min-h-screen bg-muted/30 text-foreground">
@@ -328,12 +366,18 @@ export function AppShell() {
         transition={{ type: 'spring', stiffness: 300, damping: 32 }}
         className="hidden lg:block"
       >
+        {isSimulating && simulatedRole && (
+          <SimulationBanner role={simulatedRole} onClear={() => setSimulatedRole(null)} />
+        )}
         <TopBar onMobileMenu={() => setMobileOpen(true)} onToggle={toggle} collapsed={collapsed} />
         <Outlet />
       </motion.div>
 
       {/* Mobile content */}
       <div className="lg:hidden">
+        {isSimulating && simulatedRole && (
+          <SimulationBanner role={simulatedRole} onClear={() => setSimulatedRole(null)} />
+        )}
         <TopBar onMobileMenu={() => setMobileOpen(true)} onToggle={toggle} collapsed={collapsed} />
         <Outlet />
       </div>
