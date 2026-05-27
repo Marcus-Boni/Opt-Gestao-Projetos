@@ -226,7 +226,7 @@ export class ProjectRepository {
       return list.map((t, idx) => ({
         id: t.id,
         projectId,
-        date: (t.createdAt || new Date()).toISOString().split('T')[0],
+        date: (t.createdAt || new Date()).toISOString().split('T')[0] || '',
         collaborator: t.resourceName || 'Ana Ribeiro',
         task: t.title,
         hours: 4 + (idx % 4),
@@ -235,5 +235,24 @@ export class ProjectRepository {
     }
 
     return timeEntryFixtures.filter((item) => item.projectId === projectId);
+  }
+
+  async findBacklog(projectId: string) {
+    const list = await db.select().from(tasks).where(eq(tasks.projectId, projectId));
+
+    return list.map((t) => ({
+      id: t.id,
+      projectId: t.projectId,
+      type: (t.adoType || 'PBI') as 'Epic' | 'Feature' | 'PBI',
+      title: t.title,
+      progress: t.status === 'done' ? 100 : t.status === 'doing' ? 50 : 0,
+      estimatedHours: 40,
+      actualHours: t.status === 'done' ? 40 : 20,
+      status: (t.status === 'done'
+        ? 'Concluído'
+        : t.status === 'doing'
+          ? 'Em andamento'
+          : 'Atrasado') as 'Em andamento' | 'Concluído' | 'Atrasado',
+    }));
   }
 }

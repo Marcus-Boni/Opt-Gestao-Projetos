@@ -65,7 +65,7 @@ export class ProjectCenterService {
         budgetTotal: totals.budget,
         budgetUsed: totals.harvestCost,
         budgetUsedPercent,
-        durationMonths: durationMonths(project.startDate, project.endDate),
+        durationMonths: durationMonths(project.startDate || null, project.endDate || null),
         scope: project.scope,
       };
     });
