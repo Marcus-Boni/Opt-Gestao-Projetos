@@ -1,10 +1,5 @@
 import { calculateFinanceSummary } from '@optsolv/shared';
-import {
-  backlogFixtures,
-  collaboratorFixtures,
-  financeMonthFixtures,
-  projectFixtures,
-} from './project.fixtures';
+import { ProjectRepository } from './project.repository';
 
 const MONTH_LABELS = [
   'Jan',
@@ -28,20 +23,12 @@ function durationMonths(start: string | null, end: string | null): number {
   return Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24 * 30)));
 }
 
-function mapStatus(s: string) {
-  const map: Record<string, string> = {
-    active: 'no_prazo',
-    paused: 'alerta',
-    completed: 'concluido',
-    cancelled: 'cancelado',
-  };
-  return map[s] ?? 'no_prazo';
-}
-
 export class ProjectCenterService {
+  private readonly repository = new ProjectRepository();
+
   async getProjectCenter() {
-    const projects = projectFixtures;
-    const allMonths = financeMonthFixtures;
+    const projects = await this.repository.findProjects();
+    const allMonths = await this.repository.findFinanceMonths({});
 
     const projectData = projects.map((project) => {
       const months = allMonths.filter((m) => m.projectId === project.id);
@@ -55,12 +42,21 @@ export class ProjectCenterService {
       );
       const budgetUsedPercent = totals.budget > 0 ? (totals.harvestCost / totals.budget) * 100 : 0;
 
+      // Status mapping from static fixture to database format
+      const statusMap: Record<string, string> = {
+        active: 'no_prazo',
+        paused: 'alerta',
+        completed: 'concluido',
+        cancelled: 'cancelado',
+      };
+      const displayStatus = statusMap[project.status] ?? project.status;
+
       return {
         id: project.id,
         name: project.name,
         code: project.code,
         clientName: project.clientName,
-        status: mapStatus(project.status),
+        status: displayStatus,
         startDate: project.startDate,
         endDate: project.endDate,
         managerName: 'Maria Olivia',
@@ -81,14 +77,15 @@ export class ProjectCenterService {
   }
 
   async getProjectDetailFull(projectId: string) {
-    const project = projectFixtures.find((p) => p.id === projectId);
+    const project = await this.repository.findProject(projectId);
     if (!project) return null;
 
-    const months = financeMonthFixtures.filter((m) => m.projectId === projectId);
-    const team = collaboratorFixtures.filter((c) => c.projectId === projectId);
-    const backlog = backlogFixtures.filter((b) => b.projectId === projectId);
+    const allMonths = await this.repository.findFinanceMonths({});
+    const projectMonths = allMonths.filter((m) => m.projectId === projectId);
+    const team = await this.repository.findCollaborators(projectId);
+    const backlog = await this.repository.findBacklog(projectId);
 
-    const totals = months.reduce(
+    const totals = projectMonths.reduce(
       (acc, m) => ({
         revenue: acc.revenue + m.revenue,
         expenses: acc.expenses + m.expenses,
@@ -103,7 +100,7 @@ export class ProjectCenterService {
 
     const summary = calculateFinanceSummary(totals);
 
-    const monthlyFinance = months.map((m) => {
+    const monthlyFinance = projectMonths.map((m) => {
       const ms = calculateFinanceSummary({
         revenue: m.revenue,
         expenses: m.expenses,
@@ -121,13 +118,21 @@ export class ProjectCenterService {
       };
     });
 
+    const statusMap: Record<string, string> = {
+      active: 'no_prazo',
+      paused: 'alerta',
+      completed: 'concluido',
+      cancelled: 'cancelado',
+    };
+    const displayStatus = statusMap[project.status] ?? project.status;
+
     return {
       id: project.id,
       name: project.name,
       code: project.code,
       scope: project.scope,
       clientName: project.clientName,
-      status: mapStatus(project.status),
+      status: displayStatus,
       startDate: project.startDate,
       endDate: project.endDate,
       managerName: 'Gestora PMS',
