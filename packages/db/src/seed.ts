@@ -42,9 +42,9 @@ async function seed() {
     let managerId: string;
 
     if (dbUsers.length > 0) {
-      managerId = dbUsers[0].id;
+      managerId = dbUsers[0]!.id;
       console.log(
-        `👤 Usuário existente encontrado como Gerente: ${dbUsers[0].name} (${managerId})`,
+        `👤 Usuário existente encontrado como Gerente: ${dbUsers[0]!.name} (${managerId})`,
       );
     } else {
       managerId = 'usr-mock-gp';
