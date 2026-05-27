@@ -1,8 +1,10 @@
+import { Link } from '@tanstack/react-router';
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ProjectTable, useProjectCenter } from '@/features/projects';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { EmptyState, ErrorState, LoadingState } from '@/shared/components/StateViews';
+import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
   Select,
@@ -73,6 +75,11 @@ export function ProjectsPage() {
         eyebrow="Project Center"
         title="Projetos"
         description="Portfólio agrupado por gerente responsável."
+        actions={
+          <Button asChild>
+            <Link to="/app/projetos/novo">Novo Projeto</Link>
+          </Button>
+        }
       />
       <main className="flex flex-col gap-4 p-5">
         {/* Filters */}
