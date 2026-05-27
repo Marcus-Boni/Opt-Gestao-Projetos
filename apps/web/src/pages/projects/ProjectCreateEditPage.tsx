@@ -106,7 +106,7 @@ export function ProjectCreateEditPage() {
 
   const currentProject = isEditing ? projectsList?.find((p) => p.project.id === projectId) : null;
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -233,12 +233,22 @@ export function ProjectCreateEditPage() {
             : 'Cadastre um novo projeto com as melhores práticas de planejamento.'
         }
         backButton={
-          <Link
-            to={isEditing ? `/app/projetos/${projectId}` : '/app/projetos'}
-            className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors hover:bg-muted"
-          >
-            <ArrowLeft className="size-4" />
-          </Link>
+          isEditing ? (
+            <Link
+              to="/app/projetos/$projectId"
+              params={{ projectId: projectId as string }}
+              className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors hover:bg-muted"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+          ) : (
+            <Link
+              to="/app/projetos"
+              className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground transition-colors hover:bg-muted"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+          )
         }
       />
 
@@ -643,16 +653,27 @@ export function ProjectCreateEditPage() {
 
             {/* Fixed Sticky Footer Actions */}
             <div className="fixed bottom-0 inset-x-0 z-40 bg-background/85 backdrop-blur-md border-t px-6 py-4 flex items-center justify-end gap-3 max-w-7xl mx-auto w-full md:rounded-t-lg shadow-lg">
-              <Button
-                type="button"
-                variant="outline"
-                asChild
-                disabled={createMutation.isPending || updateMutation.isPending}
-              >
-                <Link to={isEditing ? `/app/projetos/${projectId}` : '/app/projetos'}>
-                  Cancelar
-                </Link>
-              </Button>
+              {isEditing ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  asChild
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  <Link to="/app/projetos/$projectId" params={{ projectId: projectId as string }}>
+                    Cancelar
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  asChild
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  <Link to="/app/projetos">Cancelar</Link>
+                </Button>
+              )}
               <Button
                 type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending}
