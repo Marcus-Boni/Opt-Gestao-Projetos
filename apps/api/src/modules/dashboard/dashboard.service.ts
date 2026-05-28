@@ -1,9 +1,5 @@
 import { calculateFinanceSummary } from '@optsolv/shared';
-import {
-  collaboratorFixtures,
-  financeMonthFixtures,
-  projectFixtures,
-} from '../projects/project.fixtures';
+import { ProjectRepository } from '../projects/project.repository';
 
 function getProjectStatus(marginPct: number | null, budgetUsedPct: number, progressActual: number) {
   if (marginPct !== null && marginPct < 0) return 'critical';
@@ -29,10 +25,12 @@ const MONTH_LABELS = [
 ];
 
 export class DashboardService {
+  private readonly repository = new ProjectRepository();
+
   async getDashboard() {
-    const projects = projectFixtures;
-    const allMonths = financeMonthFixtures;
-    const allCollaborators = collaboratorFixtures;
+    const projects = await this.repository.findProjects();
+    const allMonths = await this.repository.findFinanceMonths({});
+    const allCollaborators = await this.repository.findAllCollaborators();
 
     // Aggregate per project
     const projectSummaries = projects.map((project) => {

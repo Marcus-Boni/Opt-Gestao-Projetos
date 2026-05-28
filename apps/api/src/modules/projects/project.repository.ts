@@ -9,13 +9,7 @@ import {
   user,
 } from '@optsolv/db';
 import { and, eq, ilike } from 'drizzle-orm';
-import {
-  collaboratorFixtures,
-  type FinanceMonthFixture,
-  financeMonthFixtures,
-  projectFixtures,
-  timeEntryFixtures,
-} from './project.fixtures';
+import { type FinanceMonthFixture, timeEntryFixtures } from './project.fixtures';
 
 export type ProjectFilters = {
   year?: number | undefined;
@@ -202,6 +196,33 @@ export class ProjectRepository {
       return {
         id: item.id,
         projectId,
+        name: item.name,
+        role: item.role,
+        hours: hoursVal,
+        cost: Math.round(hoursVal * costVal),
+      };
+    });
+  }
+
+  async findAllCollaborators() {
+    const list = await db
+      .select({
+        id: projectResources.id,
+        projectId: projectResources.projectId,
+        name: resources.name,
+        role: resources.role,
+        hours: projectResources.hoursActual,
+        costPerHour: resources.costPerHour,
+      })
+      .from(projectResources)
+      .innerJoin(resources, eq(projectResources.resourceId, resources.id));
+
+    return list.map((item) => {
+      const hoursVal = Number(item.hours || 0);
+      const costVal = Number(item.costPerHour || 0);
+      return {
+        id: item.id,
+        projectId: item.projectId,
         name: item.name,
         role: item.role,
         hours: hoursVal,

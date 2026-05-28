@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { requireSession } from '../../plugins/auth';
-import { projectFixtures } from '../projects/project.fixtures';
+import { ProjectRepository } from '../projects/project.repository';
 
 type TaskStatus = 'todo' | 'doing' | 'done';
 type TaskPriority = 'alta' | 'media' | 'baixa';
@@ -22,7 +22,7 @@ const taskStore: {
   {
     id: 't-1',
     title: 'Configurar pipeline de dados financeiros',
-    projectId: 'prj-ab-bi',
+    projectId: '11c7da25-91db-4bc5-9c98-4c9f13c66f41',
     projectName: 'Power BI Financeiro',
     clientName: 'AB Científica',
     assigneeName: 'Ana Ribeiro',
@@ -35,7 +35,7 @@ const taskStore: {
   {
     id: 't-2',
     title: 'Revisar integração OptTime — endpoints de sincronização',
-    projectId: 'prj-acotel-opt',
+    projectId: '2a9ed240-a193-4a11-b12e-a2fe4c3d3a42',
     projectName: 'OptTime Integração',
     clientName: 'Acotel',
     assigneeName: 'Carlos Mendes',
@@ -48,7 +48,7 @@ const taskStore: {
   {
     id: 't-3',
     title: 'Criar relatório de governança mensal',
-    projectId: 'prj-arcelor-governanca',
+    projectId: '3f39edbb-37a5-48fa-bb4e-76c2eb4c9f13',
     projectName: 'Governança de Projetos',
     clientName: 'Arcelor Mittal',
     assigneeName: 'Mariana Costa',
@@ -61,7 +61,7 @@ const taskStore: {
   {
     id: 't-4',
     title: 'Validar dados de horas do Comunify no Harvest',
-    projectId: 'prj-wedo-comunify',
+    projectId: '4d4de4bb-b1be-40fb-a9f2-be9de3a48bf5',
     projectName: 'Comunify Sustentação',
     clientName: 'Wedo / Comunify',
     assigneeName: null,
@@ -74,7 +74,7 @@ const taskStore: {
   {
     id: 't-5',
     title: 'Atualizar documentação de arquitetura',
-    projectId: 'prj-ab-bi',
+    projectId: '11c7da25-91db-4bc5-9c98-4c9f13c66f41',
     projectName: 'Power BI Financeiro',
     clientName: 'AB Científica',
     assigneeName: 'Ana Ribeiro',
@@ -87,6 +87,8 @@ const taskStore: {
 ];
 
 export async function tasksRoutes(app: FastifyInstance) {
+  const repo = new ProjectRepository();
+
   app.get('/api/tasks', { preHandler: requireSession }, async (req, reply) => {
     const { projectId, clientName, status, search } = req.query as {
       projectId?: string;
@@ -124,7 +126,7 @@ export async function tasksRoutes(app: FastifyInstance) {
       priority: TaskPriority;
       status?: TaskStatus;
     };
-    const project = projectFixtures.find((p) => p.id === body.projectId);
+    const project = await repo.findProject(body.projectId);
 
     if (!project) return reply.status(400).send({ error: 'Project not found' });
 
@@ -162,7 +164,7 @@ export async function tasksRoutes(app: FastifyInstance) {
     if (!task) return reply.status(404).send({ error: 'Task not found' });
 
     if (body.projectId && body.projectId !== task.projectId) {
-      const project = projectFixtures.find((p) => p.id === body.projectId);
+      const project = await repo.findProject(body.projectId);
       if (!project) return reply.status(400).send({ error: 'Project not found' });
       task.projectId = project.id;
       task.projectName = project.name;
